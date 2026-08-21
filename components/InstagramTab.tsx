@@ -4,6 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { arabicDate, instagramLink, INSTAGRAM_HANDLE, sar } from "@/lib/format";
 import { CheckIcon, InstagramIcon, EyeOffIcon, GridIcon } from "@/components/Icons";
+import ColorPicker from "@/components/ColorPicker";
+import { parseColors } from "@/lib/colors";
 
 /** منتج أُنشئ من بوست إنستقرام — الصورة والوصف من البوست، السعر يحدده صاحب المتجر */
 export type ImportedProduct = {
@@ -19,10 +21,12 @@ export type ImportedProduct = {
   category: string;
   stock: number;
   active: number;
+  colors: string;
 };
 
 type Draft = {
   name: string; price: string; category: string; stock: string; description: string; image: string;
+  colors: string[];
 };
 
 const inputCls =
@@ -58,6 +62,7 @@ export default function InstagramTab({
       stock: String(item.stock),
       description: item.description,
       image: item.image,
+      colors: parseColors(item.colors).map((c) => c.name),
     };
 
   const setField = (item: ImportedProduct, patch: Partial<Draft>) =>
@@ -79,6 +84,7 @@ export default function InstagramTab({
         category: draft.category,
         stock: Number(draft.stock),
         image: draft.image,
+        colors: draft.colors,
         publish,
       }),
     });
@@ -332,6 +338,12 @@ export default function InstagramTab({
                       onChange={(e) => setField(item, { description: e.target.value })}
                     />
                   </div>
+
+                  <ColorPicker
+                    idPrefix={`ig-color-${item.post_id}`}
+                    selected={draft.colors}
+                    onChange={(colors) => setField(item, { colors })}
+                  />
 
                   <div className="mt-auto flex flex-col gap-2 pt-1">
                     <div className="flex gap-2">

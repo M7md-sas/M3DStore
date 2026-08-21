@@ -6,6 +6,7 @@ import { sar, whatsappLink } from "@/lib/format";
 import type { ProductRow } from "@/components/ProductCard";
 import ProductCard from "@/components/ProductCard";
 import AddToCart from "@/components/AddToCart";
+import { parseColors } from "@/lib/colors";
 import { ArrowLeftIcon, ShieldIcon, TruckIcon, WhatsAppIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
@@ -54,7 +55,7 @@ export default async function ProductPage({
           <p className="mt-5 leading-relaxed text-muted">{product.description}</p>
 
           <div className="mt-8">
-            <AddToCart product={product} />
+            <AddToCart product={product} colors={parseColors(product.colors)} />
           </div>
 
           <div className="mt-8 space-y-3 rounded-2xl border border-line bg-surface p-5 text-sm">

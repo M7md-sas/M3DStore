@@ -1,19 +1,21 @@
 import { NextResponse } from "next/server";
 import { getDb, generateCode } from "@/lib/db";
 import { shippingFor } from "@/lib/shipping";
+import { isColorAvailable } from "@/lib/colors";
 
-type ItemInput = { id: number; qty: number };
+type ItemInput = { id: number; qty: number; color?: string };
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { customer_name, phone, city, address, payment_method, items } = body as {
+    const { customer_name, phone, city, address, payment_method, items, notes } = body as {
       customer_name: string;
       phone: string;
       city: string;
       address: string;
       payment_method: string;
       items: ItemInput[];
+      notes?: string;
     };
 
     if (!customer_name?.trim() || !phone?.trim() || !city?.trim())
@@ -26,14 +28,33 @@ export async function POST(request: Request) {
     const db = getDb();
     const getProduct = db.prepare("SELECT * FROM products WHERE id = ? AND active = 1");
 
-    const lineItems: { id: number; name: string; price: number; qty: number }[] = [];
+    const lineItems: {
+      id: number;
+      name: string;
+      price: number;
+      qty: number;
+      color?: string;
+    }[] = [];
     for (const item of items) {
       const qty = Math.max(1, Math.min(99, Math.floor(Number(item.qty) || 0)));
       const p = getProduct.get(Number(item.id)) as
-        | { id: number; name: string; price: number; stock: number }
+        | { id: number; name: string; price: number; stock: number; colors: string }
         | undefined;
       if (!p) return NextResponse.json({ error: "أحد المنتجات لم يعد متوفرًا" }, { status: 400 });
-      lineItems.push({ id: p.id, name: p.name, price: p.price, qty });
+
+      // اللون يُتحقق في الخادم — لا نثق بما يرسله المتصفح
+      const color = typeof item.color === "string" ? item.color.trim() : "";
+      if (!isColorAvailable(p.colors, color || undefined))
+        return NextResponse.json(
+          {
+            error: color
+              ? `اللون «${color}» لم يعد متوفرًا لمنتج «${p.name}»`
+              : `اختر لونًا لمنتج «${p.name}»`,
+          },
+          { status: 400 }
+        );
+
+      lineItems.push({ id: p.id, name: p.name, price: p.price, qty, ...(color ? { color } : {}) });
     }
 
     const subtotal = lineItems.reduce((s, i) => s + i.price * i.qty, 0);
@@ -42,8 +63,8 @@ export async function POST(request: Request) {
     const code = generateCode("ORD");
 
     db.prepare(
-      `INSERT INTO orders (code, customer_name, phone, city, address, items_json, subtotal, shipping, total, payment_method)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO orders (code, customer_name, phone, city, address, items_json, subtotal, shipping, total, payment_method, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       code,
       customer_name.trim(),
@@ -54,7 +75,8 @@ export async function POST(request: Request) {
       subtotal,
       shipping,
       total,
-      payment_method ?? ""
+      payment_method ?? "",
+      String(notes ?? "").trim().slice(0, 1000)
     );
 
     return NextResponse.json({ code });

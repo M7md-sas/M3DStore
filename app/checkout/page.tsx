@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/components/cart";
+import { useCart, itemKey } from "@/components/cart";
 import { sar, PAYMENT_METHODS } from "@/lib/format";
 import { SHIPPING_FLAT, FREE_SHIPPING_OVER } from "@/lib/shipping";
 import { ShieldIcon } from "@/components/Icons";
@@ -19,7 +19,7 @@ export default function CheckoutPage() {
   const shipping = subtotal >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
   const total = subtotal + shipping;
 
-  const [form, setForm] = useState({ name: "", phone: "", city: "الرياض", address: "", payment: "mada" });
+  const [form, setForm] = useState({ name: "", phone: "", city: "الرياض", address: "", payment: "mada", notes: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +54,8 @@ export default function CheckoutPage() {
           city: form.city,
           address: form.address.trim(),
           payment_method: form.payment,
-          items: items.map((i) => ({ id: i.id, qty: i.qty })),
+          notes: form.notes.trim(),
+          items: items.map((i) => ({ id: i.id, qty: i.qty, color: i.color })),
         }),
       });
       const data = await res.json();
@@ -107,6 +108,25 @@ export default function CheckoutPage() {
           </section>
 
           <section className="rounded-2xl border border-line bg-surface p-6">
+            <label htmlFor="notes" className="block text-lg font-extrabold">
+              ملاحظات على الطلب <span className="text-sm font-normal text-muted">(اختياري)</span>
+            </label>
+            <p className="mt-1 text-sm text-muted">
+              أي طلب خاص: اسم يُطبع على القطعة، تغليف هدية، وقت توصيل مفضّل، أو أي تفصيل تبينا ننتبه له.
+            </p>
+            <textarea
+              id="notes"
+              rows={4}
+              maxLength={1000}
+              className={`${inputCls} mt-3 resize-y`}
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              placeholder="مثال: اكتبوا اسم «محمد» على الميدالية، والتغليف هدية لو ممكن"
+            />
+            <p className="mt-1 text-left text-xs text-muted tabular">{form.notes.length} / 1000</p>
+          </section>
+
+          <section className="rounded-2xl border border-line bg-surface p-6">
             <h2 className="text-lg font-extrabold">وسيلة الدفع</h2>
             <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
               <ShieldIcon width={16} height={16} className="text-success" />
@@ -141,8 +161,12 @@ export default function CheckoutPage() {
           <h2 className="text-lg font-extrabold">طلبك</h2>
           <ul className="mt-4 space-y-2 text-sm">
             {items.map((i) => (
-              <li key={i.id} className="flex justify-between gap-2">
-                <span>{i.name} <span className="text-muted tabular">×{i.qty}</span></span>
+              <li key={itemKey(i)} className="flex justify-between gap-2">
+                <span>
+                  {i.name}
+                  {i.color && <span className="text-muted"> — {i.color}</span>}{" "}
+                  <span className="text-muted tabular">×{i.qty}</span>
+                </span>
                 <span className="font-bold tabular">{sar(i.price * i.qty)}</span>
               </li>
             ))}

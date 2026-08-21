@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/components/cart";
+import { useCart, itemKey } from "@/components/cart";
 import { sar } from "@/lib/format";
 import { SHIPPING_FLAT, FREE_SHIPPING_OVER } from "@/lib/shipping";
 import { CartIcon, MinusIcon, PlusIcon, TrashIcon } from "@/components/Icons";
@@ -38,7 +38,7 @@ export default function CartPage() {
         <ul className="space-y-4">
           {items.map((item) => (
             <li
-              key={item.id}
+              key={itemKey(item)}
               className="flex gap-4 rounded-2xl border border-line bg-surface p-4"
             >
               <div className="relative h-24 w-28 shrink-0 overflow-hidden rounded-xl bg-primary-soft/40">
@@ -46,13 +46,18 @@ export default function CartPage() {
               </div>
               <div className="flex flex-1 flex-col">
                 <div className="flex items-start justify-between gap-2">
-                  <Link href={`/products/${item.id}`} className="font-bold transition-colors hover:text-primary">
-                    {item.name}
-                  </Link>
+                  <div className="min-w-0">
+                    <Link href={`/products/${item.id}`} className="font-bold transition-colors hover:text-primary">
+                      {item.name}
+                    </Link>
+                    {item.color && (
+                      <p className="mt-0.5 text-sm text-muted">اللون: {item.color}</p>
+                    )}
+                  </div>
                   <button
                     type="button"
-                    aria-label={`حذف ${item.name} من السلة`}
-                    onClick={() => remove(item.id)}
+                    aria-label={`حذف ${item.name}${item.color ? ` (${item.color})` : ""} من السلة`}
+                    onClick={() => remove(itemKey(item))}
                     className="cursor-pointer rounded-lg p-2 text-muted transition-colors hover:bg-danger-soft hover:text-danger"
                   >
                     <TrashIcon width={18} height={18} />
@@ -63,7 +68,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       aria-label="زيادة الكمية"
-                      onClick={() => setQty(item.id, item.qty + 1)}
+                      onClick={() => setQty(itemKey(item), item.qty + 1)}
                       className="flex h-9 w-9 cursor-pointer items-center justify-center transition-colors hover:text-primary"
                     >
                       <PlusIcon width={15} height={15} />
@@ -72,7 +77,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       aria-label="تقليل الكمية"
-                      onClick={() => setQty(item.id, item.qty - 1)}
+                      onClick={() => setQty(itemKey(item), item.qty - 1)}
                       className="flex h-9 w-9 cursor-pointer items-center justify-center transition-colors hover:text-primary"
                     >
                       <MinusIcon width={15} height={15} />

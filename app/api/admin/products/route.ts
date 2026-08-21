@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { isAdmin } from "@/lib/admin-auth";
 import { isValidImagePath, fallbackImage } from "@/lib/images";
+import { serializeColors } from "@/lib/colors";
 
 export async function POST(request: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
   const db = getDb();
   const info = db
     .prepare(
-      "INSERT INTO products (name, description, price, category, image, stock) VALUES (?, ?, ?, ?, ?, ?)"
+      "INSERT INTO products (name, description, price, category, image, stock, colors) VALUES (?, ?, ?, ?, ?, ?, ?)"
     )
     .run(
       name,
@@ -25,7 +26,8 @@ export async function POST(request: Request) {
       price,
       category,
       image,
-      Math.max(0, Math.floor(Number(body.stock) || 0))
+      Math.max(0, Math.floor(Number(body.stock) || 0)),
+      serializeColors(body.colors)
     );
   return NextResponse.json({ id: info.lastInsertRowid });
 }
@@ -65,12 +67,12 @@ export async function PATCH(request: Request) {
 
     if (isValidImagePath(body.image)) {
       db.prepare(
-        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, image = ? WHERE id = ?"
-      ).run(...fields, body.image, id);
+        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?, image = ? WHERE id = ?"
+      ).run(...fields, serializeColors(body.colors), body.image, id);
     } else {
       db.prepare(
-        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ? WHERE id = ?"
-      ).run(...fields, id);
+        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ? WHERE id = ?"
+      ).run(...fields, serializeColors(body.colors), id);
     }
   }
   return NextResponse.json({ ok: true });

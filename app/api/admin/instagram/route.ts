@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { isAdmin } from "@/lib/admin-auth";
 import { isValidImagePath } from "@/lib/images";
+import { serializeColors } from "@/lib/colors";
 
 type Row = { product_id: number | null; active: number | null };
 
@@ -51,13 +52,14 @@ export async function POST(request: Request) {
     Number.isFinite(price) && price > 0 ? price : 0,
     category,
     Math.max(0, Math.floor(Number(body.stock) || 0)),
+    serializeColors(body.colors),
   ];
 
   const db = getDb();
   const image = isValidImagePath(body.image) ? body.image : null;
 
   // active لا يُمس إلا عند النشر الصريح، حتى لا يختفي منتج منشور بمجرد حفظ تعديل
-  const sql = `UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?${
+  const sql = `UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?${
     image ? ", image = ?" : ""
   }${publish ? ", active = 1" : ""} WHERE id = ?`;
 

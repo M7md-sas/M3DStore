@@ -16,15 +16,22 @@ export type CartItem = {
   price: number;
   image: string;
   qty: number;
+  /** اللون المختار — المنتج نفسه بلونين يظهر سطرين منفصلين في السلة */
+  color?: string;
 };
+
+/** مفتاح السطر: المنتج + اللون، لأن الكمية تُدار لكل لون على حدة */
+export function itemKey(item: Pick<CartItem, "id" | "color">): string {
+  return `${item.id}::${item.color ?? ""}`;
+}
 
 type CartContextValue = {
   items: CartItem[];
   count: number;
   subtotal: number;
   add: (item: Omit<CartItem, "qty">, qty?: number) => void;
-  setQty: (id: number, qty: number) => void;
-  remove: (id: number) => void;
+  setQty: (key: string, qty: number) => void;
+  remove: (key: string) => void;
   clear: () => void;
 };
 
@@ -52,26 +59,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback((item: Omit<CartItem, "qty">, qty = 1) => {
     setItems((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
+      const key = itemKey(item);
+      const existing = prev.find((i) => itemKey(i) === key);
       if (existing) {
         return prev.map((i) =>
-          i.id === item.id ? { ...i, qty: Math.min(i.qty + qty, 99) } : i
+          itemKey(i) === key ? { ...i, qty: Math.min(i.qty + qty, 99) } : i
         );
       }
       return [...prev, { ...item, qty }];
     });
   }, []);
 
-  const setQty = useCallback((id: number, qty: number) => {
+  const setQty = useCallback((key: string, qty: number) => {
     setItems((prev) =>
       qty <= 0
-        ? prev.filter((i) => i.id !== id)
-        : prev.map((i) => (i.id === id ? { ...i, qty: Math.min(qty, 99) } : i))
+        ? prev.filter((i) => itemKey(i) !== key)
+        : prev.map((i) => (itemKey(i) === key ? { ...i, qty: Math.min(qty, 99) } : i))
     );
   }, []);
 
-  const remove = useCallback((id: number) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+  const remove = useCallback((key: string) => {
+    setItems((prev) => prev.filter((i) => itemKey(i) !== key));
   }, []);
 
   const clear = useCallback(() => setItems([]), []);

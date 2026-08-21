@@ -10,6 +10,7 @@ export type ProductRow = {
   category: string;
   image: string;
   stock: number;
+  colors?: string;
 };
 
 export default function ProductCard({ product }: { product: ProductRow }) {

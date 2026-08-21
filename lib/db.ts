@@ -96,10 +96,33 @@ function createDb(): Database.Database {
     );
   `);
 
+  migrate(db);
+
   const count = db.prepare("SELECT COUNT(*) AS n FROM products").get() as { n: number };
   if (count.n === 0) seed(db);
 
   return db;
+}
+
+/**
+ * ترحيلات الأعمدة — CREATE TABLE IF NOT EXISTS لا يضيف أعمدة لجدول موجود،
+ * فنضيفها هنا. كل عملية تتحقق من وجود العمود أولًا فتشغيلها مرارًا آمن.
+ */
+function migrate(db: Database.Database) {
+  const columns = (table: string): string[] =>
+    (db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((c) => c.name);
+
+  const addColumn = (table: string, column: string, definition: string) => {
+    if (!columns(table).includes(column)) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    }
+  };
+
+  // الألوان المتوفرة لكل منتج — JSON: [{ name, hex }]
+  addColumn("products", "colors", "TEXT NOT NULL DEFAULT '[]'");
+
+  // ملاحظة الزبون على الطلب
+  addColumn("orders", "notes", "TEXT NOT NULL DEFAULT ''");
 }
 
 function seed(db: Database.Database) {

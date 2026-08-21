@@ -6,16 +6,18 @@ import { ORDER_STATUS, CUSTOM_STATUS, sar, paymentLabel } from "@/lib/format";
 import { CheckIcon, CubeIcon, XIcon, TrashIcon } from "@/components/Icons";
 import InstagramTab, { type ImportedProduct } from "@/components/InstagramTab";
 import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
+import ColorPicker from "@/components/ColorPicker";
+import { parseColors } from "@/lib/colors";
 
 /* ===== الأنواع ===== */
 type Product = {
   id: number; name: string; description: string; price: number;
-  category: string; image: string; stock: number; active: number;
+  category: string; image: string; stock: number; active: number; colors: string;
 };
 type Order = {
   id: number; code: string; customer_name: string; phone: string; city: string;
   address: string; items_json: string; subtotal: number; shipping: number;
-  total: number; payment_method: string; status: string; created_at: string;
+  total: number; payment_method: string; status: string; created_at: string; notes: string;
 };
 type CustomReq = {
   id: number; code: string; customer_name: string; phone: string; description: string;
@@ -349,7 +351,9 @@ function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
   return (
     <div className="space-y-4">
       {items.map((o) => {
-        const lineItems = JSON.parse(o.items_json) as { name: string; qty: number; price: number }[];
+        const lineItems = JSON.parse(o.items_json) as {
+          name: string; qty: number; price: number; color?: string;
+        }[];
         return (
           <div key={o.id} className="rounded-2xl border border-line bg-surface p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -381,9 +385,20 @@ function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
             </div>
             <ul className="mt-3 space-y-1 border-t border-line pt-3 text-sm text-muted">
               {lineItems.map((li, i) => (
-                <li key={i}>{li.name} <span className="tabular">×{li.qty}</span> — <span className="tabular">{sar(li.price * li.qty)}</span></li>
+                <li key={i}>
+                  {li.name}
+                  {li.color && <span className="font-bold text-foreground"> — {li.color}</span>}
+                  {" "}<span className="tabular">×{li.qty}</span> — <span className="tabular">{sar(li.price * li.qty)}</span>
+                </li>
               ))}
             </ul>
+
+            {o.notes && (
+              <div className="mt-3 rounded-xl bg-accent-soft p-4">
+                <p className="text-xs font-bold text-accent">ملاحظة الزبون</p>
+                <p className="mt-1 whitespace-pre-line text-sm leading-relaxed">{o.notes}</p>
+              </div>
+            )}
           </div>
         );
       })}
@@ -393,7 +408,7 @@ function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
 
 /* ===== تبويب المنتجات ===== */
 function ProductsTab({ items, images, reload }: { items: Product[]; images: string[]; reload: () => void }) {
-  const empty = { name: "", description: "", price: "", category: "ديكورات وهدايا", image: images[0], stock: "10" };
+  const empty = { name: "", description: "", price: "", category: "ديكورات وهدايا", image: images[0], stock: "10", colors: [] as string[] };
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [err, setErr] = useState("");
@@ -437,6 +452,7 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
       category: form.category,
       image: form.image,
       stock: Number(form.stock),
+      colors: form.colors,
     };
     const res = await fetch("/api/admin/products", {
       method: editingId ? "PATCH" : "POST",
@@ -514,6 +530,11 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
             الصور المستوردة من إنستقرام تظهر هنا تلقائيًا. لإضافة صور يدويًا: ضعها في مجلد public/products
           </p>
         </div>
+        <ColorPicker
+          idPrefix="p-color"
+          selected={form.colors}
+          onChange={(colors) => setForm({ ...form, colors })}
+        />
         {err && <p role="alert" className="text-sm font-bold text-danger">{err}</p>}
         <div className="flex gap-2">
           <button type="submit" disabled={busy}
@@ -546,6 +567,7 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
                   setForm({
                     name: p.name, description: p.description, price: String(p.price),
                     category: p.category, image: p.image, stock: String(p.stock),
+                    colors: parseColors(p.colors).map((c) => c.name),
                   });
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
