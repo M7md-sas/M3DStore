@@ -19,6 +19,8 @@ export type ImportedProduct = {
   stock: number;
   active: number;
   colors: string;
+  images: string;
+  color_mode: string;
 };
 
 /** المنتجات المستوردة من إنستقرام — الأحدث نشرًا أولًا */
@@ -26,7 +28,7 @@ export function getImportedProducts(): ImportedProduct[] {
   return getDb()
     .prepare(
       `SELECT ip.id AS post_id, ip.caption, ip.image, ip.extra_images, ip.taken_at,
-              p.id AS product_id, p.name, p.description, p.price, p.category, p.stock, p.active, p.colors
+              p.id AS product_id, p.name, p.description, p.price, p.category, p.stock, p.active, p.colors, p.images, p.color_mode
        FROM instagram_posts ip
        JOIN products p ON p.id = ip.product_id
        ORDER BY ip.taken_at DESC, ip.id DESC`

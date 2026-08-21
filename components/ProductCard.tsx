@@ -11,6 +11,8 @@ export type ProductRow = {
   image: string;
   stock: number;
   colors?: string;
+  images?: string;
+  color_mode?: string;
 };
 
 export default function ProductCard({ product }: { product: ProductRow }) {
@@ -19,7 +21,7 @@ export default function ProductCard({ product }: { product: ProductRow }) {
       href={`/products/${product.id}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-primary-soft/40">
+      <div className="relative aspect-square overflow-hidden bg-primary-soft/40">
         <Image
           src={product.image}
           alt={product.name}

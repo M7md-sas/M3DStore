@@ -5,7 +5,7 @@ import Image from "next/image";
 import { arabicDate, instagramLink, INSTAGRAM_HANDLE, sar } from "@/lib/format";
 import { CheckIcon, InstagramIcon, EyeOffIcon, GridIcon } from "@/components/Icons";
 import ColorPicker from "@/components/ColorPicker";
-import { parseColors } from "@/lib/colors";
+import { parseColors, parseColorMode } from "@/lib/colors";
 
 /** منتج أُنشئ من بوست إنستقرام — الصورة والوصف من البوست، السعر يحدده صاحب المتجر */
 export type ImportedProduct = {
@@ -22,11 +22,15 @@ export type ImportedProduct = {
   stock: number;
   active: number;
   colors: string;
+  images: string;
+  color_mode: string;
 };
 
 type Draft = {
   name: string; price: string; category: string; stock: string; description: string; image: string;
   colors: string[];
+  colorMode: "single" | "multi";
+  gallery: string[];
 };
 
 const inputCls =
@@ -63,6 +67,14 @@ export default function InstagramTab({
       description: item.description,
       image: item.image,
       colors: parseColors(item.colors).map((c) => c.name),
+      colorMode: parseColorMode(item.color_mode),
+      // معرض محفوظ من قبل؟ نستخدمه. وإلا نبدأ بكل صور البوست — وهو المطلوب غالبًا.
+      gallery: (() => {
+        const saved = safeExtras(item.images);
+        return saved.length > 0
+          ? [item.image, ...saved]
+          : [item.image, ...safeExtras(item.extra_images)];
+      })(),
     };
 
   const setField = (item: ImportedProduct, patch: Partial<Draft>) =>
@@ -83,8 +95,10 @@ export default function InstagramTab({
         price: Number(draft.price),
         category: draft.category,
         stock: Number(draft.stock),
-        image: draft.image,
+        image: draft.gallery[0] ?? draft.image,
         colors: draft.colors,
+        color_mode: draft.colorMode,
+        images: draft.gallery,
         publish,
       }),
     });
@@ -216,7 +230,7 @@ export default function InstagramTab({
                 }`}
               >
                 <div className="relative aspect-square bg-primary-soft/40">
-                  <Image src={draft.image} alt="" fill sizes="320px" className="object-cover" />
+                  <Image src={draft.gallery[0] ?? draft.image} alt="" fill sizes="320px" className="object-cover" />
                   {extras.length > 0 && (
                     <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-foreground/70 px-2.5 py-1 text-xs font-bold text-white">
                       <GridIcon width={12} height={12} />
@@ -241,23 +255,44 @@ export default function InstagramTab({
                   {extras.length > 0 && (
                     <div>
                       <span className="mb-1 block text-xs font-bold">
-                        صورة المنتج ({extras.length + 1} صور في هذا البوست)
+                        صور المنتج ({extras.length + 1} صور في هذا البوست)
                       </span>
                       <div className="flex flex-wrap gap-2">
-                        {[item.image, ...extras].map((img) => (
-                          <button
-                            key={img}
-                            type="button"
-                            onClick={() => setField(item, { image: img })}
-                            aria-label="اختيار هذه الصورة"
-                            className={`relative h-14 w-14 cursor-pointer overflow-hidden rounded-lg border-2 transition-colors ${
-                              draft.image === img ? "border-primary" : "border-line hover:border-primary/40"
-                            }`}
-                          >
-                            <Image src={img} alt="" fill sizes="56px" className="object-cover" />
-                          </button>
-                        ))}
+                        {[item.image, ...extras].map((img) => {
+                          const order = draft.gallery.indexOf(img);
+                          const on = order >= 0;
+                          return (
+                            <button
+                              key={img}
+                              type="button"
+                              onClick={() =>
+                                setField(item, {
+                                  gallery: on
+                                    ? draft.gallery.filter((g) => g !== img)
+                                    : [...draft.gallery, img],
+                                })
+                              }
+                              aria-pressed={on}
+                              aria-label={on ? "إزالة هذه الصورة" : "إضافة هذه الصورة"}
+                              className={`relative h-14 w-14 cursor-pointer overflow-hidden rounded-lg border-2 transition-colors ${
+                                on ? "border-primary" : "border-line opacity-50 hover:border-primary/40"
+                              }`}
+                            >
+                              <Image src={img} alt="" fill sizes="56px" className="object-cover" />
+                              {on && (
+                                <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-bl-md bg-primary text-[9px] font-bold text-white tabular">
+                                  {order + 1}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
+                      <p className="mt-1 text-xs text-muted">
+                        {draft.gallery.length > 1
+                          ? `${draft.gallery.length} صور — الأولى هي الرئيسية، والزبون يتنقل بينها ويكبّرها.`
+                          : "صورة واحدة — اضغط على الباقي لإضافتها كمعرض."}
+                      </p>
                     </div>
                   )}
 
@@ -344,6 +379,29 @@ export default function InstagramTab({
                     selected={draft.colors}
                     onChange={(colors) => setField(item, { colors })}
                   />
+
+                  {draft.colors.length > 1 && (
+                    <div>
+                      <span className="mb-1 block text-xs font-bold">كم لونًا يختار الزبون؟</span>
+                      <div className="flex gap-2">
+                        {([["single","لون واحد"],["multi","أكثر من لون"]] as const).map(([mode,label]) => (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => setField(item, { colorMode: mode })}
+                            aria-pressed={draft.colorMode === mode}
+                            className={`flex-1 cursor-pointer rounded-lg border-2 px-3 py-2 text-xs font-bold transition-colors ${
+                              draft.colorMode === mode
+                                ? "border-primary bg-primary-soft text-primary"
+                                : "border-line bg-surface text-muted hover:border-primary/40"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="mt-auto flex flex-col gap-2 pt-1">
                     <div className="flex gap-2">

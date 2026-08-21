@@ -58,3 +58,45 @@ export function isColorAvailable(colorsRaw: unknown, colorName: unknown): boolea
   if (available.length === 0) return !colorName; // منتج بلا ألوان: لا يُقبل اختيار لون
   return available.some((c) => c.name === colorName);
 }
+
+export type ColorMode = "single" | "multi";
+
+export function parseColorMode(raw: unknown): ColorMode {
+  return raw === "multi" ? "multi" : "single";
+}
+
+/**
+ * يتحقق من اختيار الزبون مقابل ألوان المنتج ونمط الاختيار.
+ * يرجّع الأسماء الصالحة مرتّبة بترتيب اللوحة، أو رسالة خطأ.
+ */
+export function validateSelection(
+  colorsRaw: unknown,
+  modeRaw: unknown,
+  selected: unknown
+): { ok: true; colors: string[] } | { ok: false; error: string } {
+  const available = parseColors(colorsRaw);
+  const mode = parseColorMode(modeRaw);
+
+  const names = (Array.isArray(selected) ? selected : selected ? [selected] : [])
+    .map((c) => String(c ?? "").trim())
+    .filter(Boolean);
+
+  if (available.length === 0) {
+    // منتج بلا ألوان: لا يُقبل أي اختيار
+    return names.length === 0
+      ? { ok: true, colors: [] }
+      : { ok: false, error: "هذا المنتج ليس له ألوان" };
+  }
+
+  if (names.length === 0) return { ok: false, error: "اختر اللون" };
+
+  const unknown = names.find((n) => !available.some((c) => c.name === n));
+  if (unknown) return { ok: false, error: `اللون «${unknown}» لم يعد متوفرًا` };
+
+  const unique = [...new Set(names)];
+  if (mode === "single" && unique.length > 1)
+    return { ok: false, error: "هذا المنتج بلون واحد فقط" };
+
+  // الترتيب حسب اللوحة حتى يكون مفتاح السلة ثابتًا مهما كان ترتيب الضغط
+  return { ok: true, colors: COLOR_PALETTE.filter((c) => unique.includes(c.name)).map((c) => c.name) };
+}

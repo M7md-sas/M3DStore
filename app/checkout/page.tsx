@@ -55,7 +55,7 @@ export default function CheckoutPage() {
           address: form.address.trim(),
           payment_method: form.payment,
           notes: form.notes.trim(),
-          items: items.map((i) => ({ id: i.id, qty: i.qty, color: i.color })),
+          items: items.map((i) => ({ id: i.id, qty: i.qty, colors: i.colors })),
         }),
       });
       const data = await res.json();
@@ -112,7 +112,7 @@ export default function CheckoutPage() {
               ملاحظات على الطلب <span className="text-sm font-normal text-muted">(اختياري)</span>
             </label>
             <p className="mt-1 text-sm text-muted">
-              أي طلب خاص: اسم يُطبع على القطعة، تغليف هدية، وقت توصيل مفضّل، أو أي تفصيل تبينا ننتبه له.
+              أي طلب خاص: اسم أو عبارة تُطبع على القطعة، أو أي تفصيل تبينا ننتبه له.
             </p>
             <textarea
               id="notes"
@@ -121,7 +121,7 @@ export default function CheckoutPage() {
               className={`${inputCls} mt-3 resize-y`}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="مثال: اكتبوا اسم «محمد» على الميدالية، والتغليف هدية لو ممكن"
+              placeholder="مثال: اكتبوا اسم «محمد» على الميدالية"
             />
             <p className="mt-1 text-left text-xs text-muted tabular">{form.notes.length} / 1000</p>
           </section>
@@ -164,7 +164,9 @@ export default function CheckoutPage() {
               <li key={itemKey(i)} className="flex justify-between gap-2">
                 <span>
                   {i.name}
-                  {i.color && <span className="text-muted"> — {i.color}</span>}{" "}
+                  {i.colors && i.colors.length > 0 && (
+                    <span className="text-muted"> — {i.colors.join("، ")}</span>
+                  )}{" "}
                   <span className="text-muted tabular">×{i.qty}</span>
                 </span>
                 <span className="font-bold tabular">{sar(i.price * i.qty)}</span>

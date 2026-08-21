@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getDb, generateCode } from "@/lib/db";
 import { shippingFor } from "@/lib/shipping";
-import { isColorAvailable } from "@/lib/colors";
+import { validateSelection } from "@/lib/colors";
 
-type ItemInput = { id: number; qty: number; color?: string };
+type ItemInput = { id: number; qty: number; colors?: string[] };
 
 export async function POST(request: Request) {
   try {
@@ -33,28 +33,37 @@ export async function POST(request: Request) {
       name: string;
       price: number;
       qty: number;
-      color?: string;
+      colors?: string[];
     }[] = [];
     for (const item of items) {
       const qty = Math.max(1, Math.min(99, Math.floor(Number(item.qty) || 0)));
       const p = getProduct.get(Number(item.id)) as
-        | { id: number; name: string; price: number; stock: number; colors: string }
+        | {
+            id: number;
+            name: string;
+            price: number;
+            stock: number;
+            colors: string;
+            color_mode: string;
+          }
         | undefined;
       if (!p) return NextResponse.json({ error: "أحد المنتجات لم يعد متوفرًا" }, { status: 400 });
 
-      // اللون يُتحقق في الخادم — لا نثق بما يرسله المتصفح
-      const color = typeof item.color === "string" ? item.color.trim() : "";
-      if (!isColorAvailable(p.colors, color || undefined))
+      // الألوان تُتحقق في الخادم — لا نثق بما يرسله المتصفح
+      const check = validateSelection(p.colors, p.color_mode, item.colors);
+      if (!check.ok)
         return NextResponse.json(
-          {
-            error: color
-              ? `اللون «${color}» لم يعد متوفرًا لمنتج «${p.name}»`
-              : `اختر لونًا لمنتج «${p.name}»`,
-          },
+          { error: `${check.error} لمنتج «${p.name}»` },
           { status: 400 }
         );
 
-      lineItems.push({ id: p.id, name: p.name, price: p.price, qty, ...(color ? { color } : {}) });
+      lineItems.push({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        qty,
+        ...(check.colors.length ? { colors: check.colors } : {}),
+      });
     }
 
     const subtotal = lineItems.reduce((s, i) => s + i.price * i.qty, 0);

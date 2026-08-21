@@ -7,12 +7,14 @@ import { CheckIcon, CubeIcon, XIcon, TrashIcon } from "@/components/Icons";
 import InstagramTab, { type ImportedProduct } from "@/components/InstagramTab";
 import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
 import ColorPicker from "@/components/ColorPicker";
-import { parseColors } from "@/lib/colors";
+import ImagesPicker from "@/components/ImagesPicker";
+import { parseColors, parseColorMode } from "@/lib/colors";
 
 /* ===== الأنواع ===== */
 type Product = {
   id: number; name: string; description: string; price: number;
   category: string; image: string; stock: number; active: number; colors: string;
+  images: string; color_mode: string;
 };
 type Order = {
   id: number; code: string; customer_name: string; phone: string; city: string;
@@ -352,7 +354,7 @@ function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
     <div className="space-y-4">
       {items.map((o) => {
         const lineItems = JSON.parse(o.items_json) as {
-          name: string; qty: number; price: number; color?: string;
+          name: string; qty: number; price: number; colors?: string[];
         }[];
         return (
           <div key={o.id} className="rounded-2xl border border-line bg-surface p-5">
@@ -387,7 +389,9 @@ function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
               {lineItems.map((li, i) => (
                 <li key={i}>
                   {li.name}
-                  {li.color && <span className="font-bold text-foreground"> — {li.color}</span>}
+                  {li.colors && li.colors.length > 0 && (
+                    <span className="font-bold text-foreground"> — {li.colors.join("، ")}</span>
+                  )}
                   {" "}<span className="tabular">×{li.qty}</span> — <span className="tabular">{sar(li.price * li.qty)}</span>
                 </li>
               ))}
@@ -406,9 +410,20 @@ function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
   );
 }
 
+/** يقرأ عمود JSON نصيًا ويرجّع قائمة نصوص، أو فارغة إن كان تالفًا */
+function safeList(json: string): string[] {
+  try {
+    const parsed = JSON.parse(json ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 /* ===== تبويب المنتجات ===== */
 function ProductsTab({ items, images, reload }: { items: Product[]; images: string[]; reload: () => void }) {
-  const empty = { name: "", description: "", price: "", category: "ديكورات وهدايا", image: images[0], stock: "10", colors: [] as string[] };
+  const empty = { name: "", description: "", price: "", category: "ديكورات وهدايا", image: images[0], stock: "10", colors: [] as string[],
+    gallery: [images[0]] as string[], colorMode: "single" as "single" | "multi" };
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [err, setErr] = useState("");
@@ -450,9 +465,11 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
       description: form.description,
       price: Number(form.price),
       category: form.category,
-      image: form.image,
+      image: form.gallery[0] ?? form.image,
+      images: form.gallery,
       stock: Number(form.stock),
       colors: form.colors,
+      color_mode: form.colorMode,
     };
     const res = await fetch("/api/admin/products", {
       method: editingId ? "PATCH" : "POST",
@@ -512,20 +529,11 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
           </select>
         </div>
         <div>
-          <span className="mb-1 block text-sm font-bold">الصورة</span>
-          <div className="grid grid-cols-4 gap-2">
-            {images.map((img) => (
-              <button
-                key={img} type="button" aria-label={`اختيار صورة ${img}`}
-                onClick={() => setForm({ ...form, image: img })}
-                className={`relative aspect-square cursor-pointer overflow-hidden rounded-lg border-2 transition-colors ${
-                  form.image === img ? "border-primary" : "border-line hover:border-primary/40"
-                }`}
-              >
-                <Image src={img} alt="" fill sizes="80px" className="object-cover" />
-              </button>
-            ))}
-          </div>
+          <ImagesPicker
+            available={images}
+            selected={form.gallery}
+            onChange={(gallery) => setForm({ ...form, gallery })}
+          />
           <p className="mt-1 text-xs text-muted">
             الصور المستوردة من إنستقرام تظهر هنا تلقائيًا. لإضافة صور يدويًا: ضعها في مجلد public/products
           </p>
@@ -535,6 +543,38 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
           selected={form.colors}
           onChange={(colors) => setForm({ ...form, colors })}
         />
+        {form.colors.length > 1 && (
+          <div>
+            <span className="mb-1 block text-sm font-bold">كم لونًا يختار الزبون؟</span>
+            <div className="flex gap-2">
+              {(
+                [
+                  ["single", "لون واحد"],
+                  ["multi", "أكثر من لون"],
+                ] as const
+              ).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setForm({ ...form, colorMode: mode })}
+                  aria-pressed={form.colorMode === mode}
+                  className={`flex-1 cursor-pointer rounded-xl border-2 px-4 py-2.5 text-sm font-bold transition-colors ${
+                    form.colorMode === mode
+                      ? "border-primary bg-primary-soft text-primary"
+                      : "border-line bg-surface text-muted hover:border-primary/40"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-muted">
+              {form.colorMode === "multi"
+                ? "الزبون يقدر يجمع أكثر من لون في القطعة الواحدة."
+                : "الزبون يختار لونًا واحدًا فقط."}
+            </p>
+          </div>
+        )}
         {err && <p role="alert" className="text-sm font-bold text-danger">{err}</p>}
         <div className="flex gap-2">
           <button type="submit" disabled={busy}
@@ -568,6 +608,8 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
                     name: p.name, description: p.description, price: String(p.price),
                     category: p.category, image: p.image, stock: String(p.stock),
                     colors: parseColors(p.colors).map((c) => c.name),
+                    gallery: [p.image, ...safeList(p.images)],
+                    colorMode: parseColorMode(p.color_mode),
                   });
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}

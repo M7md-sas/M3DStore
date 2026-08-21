@@ -121,6 +121,12 @@ function migrate(db: Database.Database) {
   // الألوان المتوفرة لكل منتج — JSON: [{ name, hex }]
   addColumn("products", "colors", "TEXT NOT NULL DEFAULT '[]'");
 
+  // صور إضافية للمنتج — JSON: ["/instagram/x.jpg", ...] بجانب عمود image الرئيسي
+  addColumn("products", "images", "TEXT NOT NULL DEFAULT '[]'");
+
+  // 'single' = الزبون يختار لونًا واحدًا، 'multi' = يختار أكثر من لون
+  addColumn("products", "color_mode", "TEXT NOT NULL DEFAULT 'single'");
+
   // ملاحظة الزبون على الطلب
   addColumn("orders", "notes", "TEXT NOT NULL DEFAULT ''");
 }

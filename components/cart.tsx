@@ -16,13 +16,13 @@ export type CartItem = {
   price: number;
   image: string;
   qty: number;
-  /** اللون المختار — المنتج نفسه بلونين يظهر سطرين منفصلين في السلة */
-  color?: string;
+  /** الألوان المختارة — نفس المنتج باختيار ألوان مختلف يصير سطرًا مستقلًا */
+  colors?: string[];
 };
 
-/** مفتاح السطر: المنتج + اللون، لأن الكمية تُدار لكل لون على حدة */
-export function itemKey(item: Pick<CartItem, "id" | "color">): string {
-  return `${item.id}::${item.color ?? ""}`;
+/** مفتاح السطر: المنتج + اختيار الألوان، لأن الكمية تُدار لكل اختيار على حدة */
+export function itemKey(item: Pick<CartItem, "id" | "colors">): string {
+  return `${item.id}::${(item.colors ?? []).join("|")}`;
 }
 
 type CartContextValue = {

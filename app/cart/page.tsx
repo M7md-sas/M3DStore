@@ -50,13 +50,15 @@ export default function CartPage() {
                     <Link href={`/products/${item.id}`} className="font-bold transition-colors hover:text-primary">
                       {item.name}
                     </Link>
-                    {item.color && (
-                      <p className="mt-0.5 text-sm text-muted">اللون: {item.color}</p>
+                    {item.colors && item.colors.length > 0 && (
+                      <p className="mt-0.5 text-sm text-muted">
+                        {item.colors.length > 1 ? "الألوان" : "اللون"}: {item.colors.join("، ")}
+                      </p>
                     )}
                   </div>
                   <button
                     type="button"
-                    aria-label={`حذف ${item.name}${item.color ? ` (${item.color})` : ""} من السلة`}
+                    aria-label={`حذف ${item.name} من السلة`}
                     onClick={() => remove(itemKey(item))}
                     className="cursor-pointer rounded-lg p-2 text-muted transition-colors hover:bg-danger-soft hover:text-danger"
                   >

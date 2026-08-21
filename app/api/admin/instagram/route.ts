@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { isAdmin } from "@/lib/admin-auth";
-import { isValidImagePath } from "@/lib/images";
-import { serializeColors } from "@/lib/colors";
+import { isValidImagePath, serializeImages } from "@/lib/images";
+import { serializeColors, parseColorMode } from "@/lib/colors";
 
 type Row = { product_id: number | null; active: number | null };
 
@@ -53,17 +53,23 @@ export async function POST(request: Request) {
     category,
     Math.max(0, Math.floor(Number(body.stock) || 0)),
     serializeColors(body.colors),
+    parseColorMode(body.color_mode),
   ];
 
   const db = getDb();
   const image = isValidImagePath(body.image) ? body.image : null;
 
   // active لا يُمس إلا عند النشر الصريح، حتى لا يختفي منتج منشور بمجرد حفظ تعديل
-  const sql = `UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?${
+  const sql = `UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?, color_mode = ?, images = ?${
     image ? ", image = ?" : ""
   }${publish ? ", active = 1" : ""} WHERE id = ?`;
 
-  db.prepare(sql).run(...fields, ...(image ? [image] : []), row.product_id);
+  db.prepare(sql).run(
+    ...fields,
+    serializeImages(body.images, image ?? ""),
+    ...(image ? [image] : []),
+    row.product_id
+  );
 
   return NextResponse.json({
     ok: true,

@@ -6,7 +6,9 @@ import { sar, whatsappLink } from "@/lib/format";
 import type { ProductRow } from "@/components/ProductCard";
 import ProductCard from "@/components/ProductCard";
 import AddToCart from "@/components/AddToCart";
-import { parseColors } from "@/lib/colors";
+import { parseColors, parseColorMode } from "@/lib/colors";
+import { productImages } from "@/lib/images";
+import ProductGallery from "@/components/ProductGallery";
 import { ArrowLeftIcon, ShieldIcon, TruckIcon, WhatsAppIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
@@ -37,16 +39,7 @@ export default async function ProductPage({
       </nav>
 
       <div className="grid gap-10 md:grid-cols-2">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-line bg-primary-soft/40">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover"
-            priority
-          />
-        </div>
+        <ProductGallery images={productImages(product)} alt={product.name} />
 
         <div>
           <span className="text-sm font-semibold text-muted">{product.category}</span>
@@ -55,7 +48,11 @@ export default async function ProductPage({
           <p className="mt-5 leading-relaxed text-muted">{product.description}</p>
 
           <div className="mt-8">
-            <AddToCart product={product} colors={parseColors(product.colors)} />
+            <AddToCart
+              product={product}
+              colors={parseColors(product.colors)}
+              colorMode={parseColorMode(product.color_mode)}
+            />
           </div>
 
           <div className="mt-8 space-y-3 rounded-2xl border border-line bg-surface p-5 text-sm">

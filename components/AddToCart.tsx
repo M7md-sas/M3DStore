@@ -4,21 +4,25 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "./cart";
 import { CartIcon, CheckIcon, MinusIcon, PlusIcon } from "./Icons";
-import type { ProductColor } from "@/lib/colors";
+import type { ProductColor, ColorMode } from "@/lib/colors";
 
 export default function AddToCart({
   product,
   colors,
+  colorMode,
 }: {
   product: { id: number; name: string; price: number; image: string; stock: number };
   colors: ProductColor[];
+  colorMode: ColorMode;
 }) {
   const { add } = useCart();
   const router = useRouter();
   const [qty, setQtyState] = useState(1);
   const [added, setAdded] = useState(false);
-  // لون واحد فقط؟ نختاره تلقائيًا فلا نضيّع خطوة على الزبون
-  const [color, setColor] = useState<string>(colors.length === 1 ? colors[0].name : "");
+  // لون واحد متاح في وضع الاختيار المفرد؟ نختاره تلقائيًا فلا نضيّع خطوة
+  const [selected, setSelected] = useState<string[]>(
+    colorMode === "single" && colors.length === 1 ? [colors[0].name] : []
+  );
   const [error, setError] = useState("");
 
   if (product.stock <= 0) {
@@ -30,20 +34,34 @@ export default function AddToCart({
   }
 
   const needsColor = colors.length > 0;
+  const multi = colorMode === "multi";
+
+  const toggle = (name: string) => {
+    setError("");
+    setSelected((prev) =>
+      multi
+        ? prev.includes(name)
+          ? prev.filter((n) => n !== name)
+          : [...prev, name]
+        : [name]
+    );
+  };
 
   const addNow = (): boolean => {
-    if (needsColor && !color) {
-      setError("اختر اللون أولًا");
+    if (needsColor && selected.length === 0) {
+      setError(multi ? "اختر لونًا واحدًا على الأقل" : "اختر اللون أولًا");
       return false;
     }
     setError("");
+    // الترتيب حسب اللوحة حتى لا يتغير مفتاح السلة بتغيّر ترتيب الضغط
+    const ordered = colors.filter((c) => selected.includes(c.name)).map((c) => c.name);
     add(
       {
         id: product.id,
         name: product.name,
         price: product.price,
         image: product.image,
-        ...(needsColor ? { color } : {}),
+        ...(needsColor ? { colors: ordered } : {}),
       },
       qty
     );
@@ -57,42 +75,51 @@ export default function AddToCart({
       {needsColor && (
         <fieldset>
           <legend className="mb-2 text-sm font-bold">
-            اللون
-            {color ? (
-              <span className="font-normal text-muted"> — {color}</span>
+            {multi ? "الألوان" : "اللون"}
+            {selected.length > 0 ? (
+              <span className="font-normal text-muted"> — {selected.join("، ")}</span>
             ) : (
-              <span className="font-normal text-accent"> — مطلوب</span>
+              <span className="font-normal text-accent">
+                {multi ? " — اختر لونًا أو أكثر" : " — مطلوب"}
+              </span>
             )}
           </legend>
+
           <div className="flex flex-wrap gap-2">
             {colors.map((c) => {
-              const selected = color === c.name;
+              const on = selected.includes(c.name);
               return (
                 <button
                   key={c.name}
                   type="button"
-                  onClick={() => {
-                    setColor(c.name);
-                    setError("");
-                  }}
-                  aria-pressed={selected}
+                  onClick={() => toggle(c.name)}
+                  aria-pressed={on}
                   title={c.name}
                   className={`flex cursor-pointer items-center gap-2 rounded-xl border-2 px-3 py-2 text-sm font-semibold transition-colors duration-200 ${
-                    selected
+                    on
                       ? "border-primary bg-primary-soft text-primary"
                       : "border-line bg-surface hover:border-primary/40"
                   }`}
                 >
                   <span
                     aria-hidden
-                    className="h-5 w-5 shrink-0 rounded-full border border-line"
+                    className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-line"
                     style={{ backgroundColor: c.hex }}
-                  />
+                  >
+                    {on && multi && <CheckIcon width={12} height={12} className="text-white drop-shadow" />}
+                  </span>
                   {c.name}
                 </button>
               );
             })}
           </div>
+
+          {multi && (
+            <p className="mt-1.5 text-xs text-muted">
+              تقدر تختار أكثر من لون — نطبع القطعة بالألوان اللي تختارها.
+            </p>
+          )}
+
           {error && (
             <p role="alert" className="mt-2 text-sm font-bold text-danger">
               {error}

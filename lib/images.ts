@@ -48,3 +48,30 @@ export function isValidImagePath(value: unknown): value is string {
 export function fallbackImage(): string {
   return listProductImages()[0] ?? "/products/vase.svg";
 }
+
+/**
+ * كل صور المنتج: الرئيسية أولًا ثم الإضافية، بلا تكرار،
+ * ومع تجاهل أي مسار لم يعد موجودًا على القرص.
+ */
+export function productImages(product: { image: string; images?: string }): string[] {
+  const extra: string[] = (() => {
+    try {
+      const parsed = JSON.parse(product.images ?? "[]");
+      return Array.isArray(parsed) ? parsed.filter((v) => typeof v === "string") : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  const all = [product.image, ...extra].filter(isValidImagePath);
+  return [...new Set(all)];
+}
+
+/** يحوّل قائمة صور إلى JSON للتخزين، بعد استبعاد الرئيسية وأي مسار غير صالح */
+export function serializeImages(input: unknown, mainImage: string): string {
+  if (!Array.isArray(input)) return "[]";
+  const list = input
+    .filter((v): v is string => typeof v === "string")
+    .filter((v) => v !== mainImage && isValidImagePath(v));
+  return JSON.stringify([...new Set(list)]);
+}
