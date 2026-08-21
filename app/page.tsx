@@ -11,6 +11,9 @@ import {
   TruckIcon,
   UploadIcon,
 } from "@/components/Icons";
+import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
+import { instagramLink } from "@/lib/format";
+import { InstagramIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -34,8 +37,9 @@ export default function HomePage() {
             <span className="text-primary"> قطع حقيقية</span>
           </h1>
           <p className="mt-4 max-w-md text-lg leading-relaxed text-muted">
-            ديكورات وهدايا مخصصة وقطع عملية مطبوعة بدقة عالية — وإذا عندك فكرة
-            خاصة، ارفعها لنا ونطبعها لك.
+            {CUSTOM_ORDERS_ENABLED
+              ? "ديكورات وهدايا مخصصة وقطع عملية مطبوعة بدقة عالية — وإذا عندك فكرة خاصة، ارفعها لنا ونطبعها لك."
+              : "ديكورات وهدايا وقطع عملية مطبوعة بدقة عالية، مصنوعة عندنا قطعة قطعة."}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
@@ -44,12 +48,24 @@ export default function HomePage() {
             >
               تصفح المنتجات
             </Link>
-            <Link
-              href="/custom"
-              className="rounded-xl border-2 border-primary px-7 py-3.5 font-bold text-primary transition-colors duration-200 hover:bg-primary-soft"
-            >
-              اطلب تصميمك الخاص
-            </Link>
+            {CUSTOM_ORDERS_ENABLED ? (
+              <Link
+                href="/custom"
+                className="rounded-xl border-2 border-primary px-7 py-3.5 font-bold text-primary transition-colors duration-200 hover:bg-primary-soft"
+              >
+                اطلب تصميمك الخاص
+              </Link>
+            ) : (
+              <a
+                href={instagramLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border-2 border-primary px-7 py-3.5 font-bold text-primary transition-colors duration-200 hover:bg-primary-soft"
+              >
+                <InstagramIcon width={18} height={18} />
+                شاهد أعمالنا
+              </a>
+            )}
           </div>
           <div className="mt-8">
             <PaymentBadges size="sm" />
@@ -79,11 +95,17 @@ export default function HomePage() {
             title: "دفع آمن 100%",
             desc: "مدى، Apple Pay، STC Pay، تابي وتمارا عبر بوابات معتمدة",
           },
-          {
-            icon: <UploadIcon width={24} height={24} />,
-            title: "تصميمك الخاص",
-            desc: "ارفع ملفك أو اشرح فكرتك، نراجعها ونرد عليك قبل أي دفع",
-          },
+          CUSTOM_ORDERS_ENABLED
+            ? {
+                icon: <UploadIcon width={24} height={24} />,
+                title: "تصميمك الخاص",
+                desc: "ارفع ملفك أو اشرح فكرتك، نراجعها ونرد عليك قبل أي دفع",
+              }
+            : {
+                icon: <PrinterIcon width={24} height={24} />,
+                title: "طباعة بدقة 0.2 ملم",
+                desc: "كل قطعة مطبوعة عند الطلب بخامات متينة وجودة عالية",
+              },
         ].map((f) => (
           <div key={f.title} className="flex gap-4 rounded-2xl border border-line bg-surface p-5">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
@@ -118,37 +140,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* كيف يعمل الطلب المخصص */}
-      <section className="rounded-3xl bg-primary-soft/60 p-8 md:p-12">
-        <h2 className="text-center text-2xl font-extrabold">
-          عندك فكرة؟ نطبعها لك في 4 خطوات
-        </h2>
-        <div className="mt-10 grid gap-8 md:grid-cols-4">
-          {[
-            { n: "1", t: "أرسل فكرتك", d: "ارفع ملف التصميم أو صورة واشرح طلبك" },
-            { n: "2", t: "نراجع الطلب", d: "نتأكد أن التصميم قابل للطباعة ونحدد السعر" },
-            { n: "3", t: "توافق وتدفع", d: "بعد قبول الطلب يصلك رابط دفع آمن" },
-            { n: "4", t: "نطبع ونشحن", d: "نبدأ الطباعة فورًا ويوصلك المنتج لباب البيت" },
-          ].map((s) => (
-            <div key={s.n} className="text-center">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-extrabold text-white tabular">
-                {s.n}
-              </span>
-              <h3 className="mt-4 font-bold">{s.t}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-muted">{s.d}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-10 text-center">
-          <Link
-            href="/custom"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3.5 font-bold text-white transition-colors duration-200 hover:bg-primary-hover"
-          >
-            <CheckIcon width={18} height={18} />
-            ابدأ طلبك المخصص الآن
-          </Link>
-        </div>
-      </section>
+      {/* كيف يعمل الطلب المخصص — يظهر فقط عند تفعيل طلبات التصميم */}
+      {CUSTOM_ORDERS_ENABLED && (
+        <section className="rounded-3xl bg-primary-soft/60 p-8 md:p-12">
+          <h2 className="text-center text-2xl font-extrabold">
+            عندك فكرة؟ نطبعها لك في 4 خطوات
+          </h2>
+          <div className="mt-10 grid gap-8 md:grid-cols-4">
+            {[
+              { n: "1", t: "أرسل فكرتك", d: "ارفع ملف التصميم أو صورة واشرح طلبك" },
+              { n: "2", t: "نراجع الطلب", d: "نتأكد أن التصميم قابل للطباعة ونحدد السعر" },
+              { n: "3", t: "توافق وتدفع", d: "بعد قبول الطلب يصلك رابط دفع آمن" },
+              { n: "4", t: "نطبع ونشحن", d: "نبدأ الطباعة فورًا ويوصلك المنتج لباب البيت" },
+            ].map((s) => (
+              <div key={s.n} className="text-center">
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-extrabold text-white tabular">
+                  {s.n}
+                </span>
+                <h3 className="mt-4 font-bold">{s.t}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{s.d}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 text-center">
+            <Link
+              href="/custom"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3.5 font-bold text-white transition-colors duration-200 hover:bg-primary-hover"
+            >
+              <CheckIcon width={18} height={18} />
+              ابدأ طلبك المخصص الآن
+            </Link>
+          </div>
+        </section>
+      )}
+
     </div>
   );
 }

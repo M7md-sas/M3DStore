@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { arabicDate, instagramLink, INSTAGRAM_HANDLE, sar } from "@/lib/format";
-import { CheckIcon, InstagramIcon, EyeIcon, EyeOffIcon, GridIcon } from "@/components/Icons";
+import { CheckIcon, InstagramIcon, EyeOffIcon, GridIcon } from "@/components/Icons";
 
 /** منتج أُنشئ من بوست إنستقرام — الصورة والوصف من البوست، السعر يحدده صاحب المتجر */
 export type ImportedProduct = {
@@ -21,7 +21,9 @@ export type ImportedProduct = {
   active: number;
 };
 
-type Draft = { name: string; price: string; category: string; stock: string; description: string };
+type Draft = {
+  name: string; price: string; category: string; stock: string; description: string; image: string;
+};
 
 const inputCls =
   "w-full rounded-xl border border-line bg-surface px-4 py-2.5 outline-none transition-colors focus:border-primary";
@@ -55,6 +57,7 @@ export default function InstagramTab({
       category: item.category,
       stock: String(item.stock),
       description: item.description,
+      image: item.image,
     };
 
   const setField = (item: ImportedProduct, patch: Partial<Draft>) =>
@@ -75,6 +78,7 @@ export default function InstagramTab({
         price: Number(draft.price),
         category: draft.category,
         stock: Number(draft.stock),
+        image: draft.image,
         publish,
       }),
     });
@@ -206,7 +210,7 @@ export default function InstagramTab({
                 }`}
               >
                 <div className="relative aspect-square bg-primary-soft/40">
-                  <Image src={item.image} alt="" fill sizes="320px" className="object-cover" />
+                  <Image src={draft.image} alt="" fill sizes="320px" className="object-cover" />
                   {extras.length > 0 && (
                     <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-foreground/70 px-2.5 py-1 text-xs font-bold text-white">
                       <GridIcon width={12} height={12} />
@@ -227,6 +231,29 @@ export default function InstagramTab({
                     <span>منتج رقم {item.product_id}</span>
                     {item.taken_at && <span>{arabicDate(item.taken_at)}</span>}
                   </div>
+
+                  {extras.length > 0 && (
+                    <div>
+                      <span className="mb-1 block text-xs font-bold">
+                        صورة المنتج ({extras.length + 1} صور في هذا البوست)
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {[item.image, ...extras].map((img) => (
+                          <button
+                            key={img}
+                            type="button"
+                            onClick={() => setField(item, { image: img })}
+                            aria-label="اختيار هذه الصورة"
+                            className={`relative h-14 w-14 cursor-pointer overflow-hidden rounded-lg border-2 transition-colors ${
+                              draft.image === img ? "border-primary" : "border-line hover:border-primary/40"
+                            }`}
+                          >
+                            <Image src={img} alt="" fill sizes="56px" className="object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <label htmlFor={`ig-name-${item.post_id}`} className="mb-1 block text-xs font-bold">
@@ -306,36 +333,45 @@ export default function InstagramTab({
                     />
                   </div>
 
-                  <div className="mt-auto flex gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => save(item, true)}
-                      disabled={busy === item.post_id || !draft.name.trim() || !Number(draft.price)}
-                      className="flex-1 cursor-pointer rounded-xl bg-primary py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {busy === item.post_id ? "..." : live ? "حفظ التعديلات" : "نشر في المتجر"}
-                    </button>
-                    {live && (
+                  <div className="mt-auto flex flex-col gap-2 pt-1">
+                    <div className="flex gap-2">
+                      {/* الحفظ متاح دائمًا بلا شرط سعر — للتعديل قبل التسعير */}
                       <button
                         type="button"
-                        onClick={() => setActive(item, false)}
-                        disabled={busy === item.post_id}
-                        title="إخفاء من المتجر"
-                        className="flex cursor-pointer items-center justify-center rounded-xl border border-line px-4 py-2.5 text-sm font-bold transition-colors hover:border-danger hover:text-danger disabled:opacity-50"
+                        onClick={() => save(item, false)}
+                        disabled={busy === item.post_id || !draft.name.trim()}
+                        className="flex-1 cursor-pointer rounded-xl border border-line py-2.5 text-sm font-bold transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <EyeOffIcon width={16} height={16} />
+                        {busy === item.post_id ? "..." : "حفظ التعديلات"}
                       </button>
-                    )}
-                    {!live && item.price > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setActive(item, true)}
-                        disabled={busy === item.post_id}
-                        title="إظهار في المتجر"
-                        className="flex cursor-pointer items-center justify-center rounded-xl border border-line px-4 py-2.5 text-sm font-bold transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
-                      >
-                        <EyeIcon width={16} height={16} />
-                      </button>
+
+                      {live ? (
+                        <button
+                          type="button"
+                          onClick={() => setActive(item, false)}
+                          disabled={busy === item.post_id}
+                          title="إخفاء من المتجر"
+                          className="flex cursor-pointer items-center justify-center rounded-xl border border-line px-4 py-2.5 transition-colors hover:border-danger hover:bg-danger-soft hover:text-danger disabled:opacity-50"
+                        >
+                          <EyeOffIcon width={16} height={16} />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => save(item, true)}
+                          disabled={busy === item.post_id || !draft.name.trim() || !Number(draft.price)}
+                          title={!Number(draft.price) ? "حدّد السعر أولًا" : "نشر في المتجر"}
+                          className="flex-1 cursor-pointer rounded-xl bg-primary py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          نشر في المتجر
+                        </button>
+                      )}
+                    </div>
+
+                    {!live && !Number(draft.price) && (
+                      <p className="text-center text-xs text-muted">
+                        تقدر تحفظ التعديلات الآن وتسعّره لاحقًا
+                      </p>
                     )}
                   </div>
 

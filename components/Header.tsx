@@ -6,11 +6,12 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "./cart";
 import { CartIcon, CubeIcon, MenuIcon, XIcon } from "./Icons";
+import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
 
 const links = [
   { href: "/", label: "الرئيسية" },
   { href: "/products", label: "المنتجات" },
-  { href: "/custom", label: "اطلب تصميمك" },
+  ...(CUSTOM_ORDERS_ENABLED ? [{ href: "/custom", label: "اطلب تصميمك" }] : []),
   { href: "/track", label: "تتبع طلبك" },
 ];
 

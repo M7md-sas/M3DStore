@@ -3,11 +3,15 @@ import path from "path";
 import fs from "fs/promises";
 import crypto from "crypto";
 import { getDb, generateCode, uploadsDir } from "@/lib/db";
+import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
 
 const ALLOWED_EXT = [".stl", ".obj", ".3mf", ".step", ".stp", ".png", ".jpg", ".jpeg", ".webp", ".pdf", ".zip"];
 const MAX_SIZE = 40 * 1024 * 1024; // 40MB
 
 export async function POST(request: Request) {
+  if (!CUSTOM_ORDERS_ENABLED)
+    return NextResponse.json({ error: "طلبات التصميم المخصص غير متاحة حاليًا" }, { status: 404 });
+
   try {
     const form = await request.formData();
     const customer_name = String(form.get("name") ?? "").trim();

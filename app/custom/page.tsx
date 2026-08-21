@@ -3,8 +3,13 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { CheckIcon, ClockIcon, UploadIcon, XIcon } from "@/components/Icons";
+import { notFound } from "next/navigation";
+import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
 
 export default function CustomOrderPage() {
+  // الميزة معطّلة حاليًا — إخفاء الرابط وحده لا يكفي، الصفحة نفسها تُقفل
+  if (!CUSTOM_ORDERS_ENABLED) notFound();
+
   const [form, setForm] = useState({ name: "", phone: "", description: "" });
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState("");

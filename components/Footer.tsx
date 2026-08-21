@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import PaymentBadges from "./PaymentBadges";
 import { WHATSAPP_DISPLAY, whatsappLink, instagramLink, INSTAGRAM_HANDLE } from "@/lib/format";
+import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
 import { CubeIcon, InstagramIcon, ShieldIcon, TruckIcon, WhatsAppIcon } from "./Icons";
 
 export default function Footer({ logo }: { logo: string | null }) {
@@ -33,7 +34,9 @@ export default function Footer({ logo }: { logo: string | null }) {
           <h3 className="mb-3 text-sm font-bold">روابط سريعة</h3>
           <ul className="space-y-2 text-sm">
             <li><Link className="text-muted transition-colors hover:text-primary" href="/products">جميع المنتجات</Link></li>
-            <li><Link className="text-muted transition-colors hover:text-primary" href="/custom">اطلب تصميمك الخاص</Link></li>
+            {CUSTOM_ORDERS_ENABLED && (
+              <li><Link className="text-muted transition-colors hover:text-primary" href="/custom">اطلب تصميمك الخاص</Link></li>
+            )}
             <li><Link className="text-muted transition-colors hover:text-primary" href="/track">تتبع طلبك</Link></li>
             <li><Link className="text-muted transition-colors hover:text-primary" href="/cart">سلة المشتريات</Link></li>
           </ul>

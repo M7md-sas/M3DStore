@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { ORDER_STATUS, CUSTOM_STATUS, sar, paymentLabel } from "@/lib/format";
-import { CheckIcon, CubeIcon, XIcon } from "@/components/Icons";
+import { CheckIcon, CubeIcon, XIcon, TrashIcon } from "@/components/Icons";
 import InstagramTab, { type ImportedProduct } from "@/components/InstagramTab";
+import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
 
 /* ===== الأنواع ===== */
 type Product = {
@@ -36,7 +37,9 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [tab, setTab] = useState<"custom" | "orders" | "products" | "instagram">("custom");
+  const [tab, setTab] = useState<"custom" | "orders" | "products" | "instagram">(
+    CUSTOM_ORDERS_ENABLED ? "custom" : "instagram"
+  );
 
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -136,7 +139,15 @@ export default function AdminPage() {
 
       {/* إحصائيات */}
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Stat label="طلبات مخصصة بانتظار مراجعتك" value={String(pendingCustom)} highlight={pendingCustom > 0} />
+        {CUSTOM_ORDERS_ENABLED || custom.length > 0 ? (
+          <Stat label="طلبات مخصصة بانتظار مراجعتك" value={String(pendingCustom)} highlight={pendingCustom > 0} />
+        ) : (
+          <Stat
+            label="منتجات بانتظار التسعير"
+            value={String(igPending)}
+            highlight={igPending > 0}
+          />
+        )}
         <Stat label="طلبات نشطة" value={String(activeOrders)} />
         <Stat label="إجمالي المبيعات المدفوعة" value={sar(revenue)} />
       </div>
@@ -144,7 +155,9 @@ export default function AdminPage() {
       {/* تبويبات */}
       <div className="mt-8 flex gap-2 border-b border-line" role="tablist">
         {([
-          ["custom", `التصاميم المخصصة${pendingCustom ? ` (${pendingCustom})` : ""}`],
+          ...(CUSTOM_ORDERS_ENABLED || custom.length > 0
+            ? ([["custom", `التصاميم المخصصة${pendingCustom ? ` (${pendingCustom})` : ""}`]] as const)
+            : []),
           ["orders", "الطلبات"],
           ["products", "المنتجات"],
           ["instagram", `إنستقرام${igPending ? ` (${igPending})` : ""}`],
@@ -386,6 +399,32 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const remove = async (p: Product) => {
+    if (
+      !confirm(
+        `حذف «${p.name}» نهائيًا؟\n\nإذا كان المنتج ضمن طلب سابق فسيُخفى بدل الحذف حتى لا ينكسر سجل الطلبات.`
+      )
+    )
+      return;
+    setErr("");
+    setBusy(true);
+    const res = await fetch("/api/admin/products", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: p.id }),
+    });
+    const data = await res.json();
+    if (!res.ok) setErr(data.error ?? "حدث خطأ");
+    else if (!data.deleted)
+      setErr("المنتج مرتبط بطلب سابق، فأُخفي من المتجر بدل حذفه نهائيًا.");
+    else if (editingId === p.id) {
+      setEditingId(null);
+      setForm(empty);
+    }
+    setBusy(false);
+    reload();
+  };
+
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr("");
@@ -520,6 +559,16 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
                     : "bg-success text-white hover:opacity-90"
                 }`}>
                 {p.active ? "إخفاء" : "إظهار"}
+              </button>
+              <button
+                type="button"
+                onClick={() => remove(p)}
+                disabled={busy}
+                aria-label={`حذف ${p.name}`}
+                title="حذف المنتج"
+                className="cursor-pointer rounded-lg border border-line px-3 py-2 text-muted transition-colors hover:border-danger hover:bg-danger-soft hover:text-danger disabled:opacity-50"
+              >
+                <TrashIcon width={16} height={16} />
               </button>
             </div>
           </div>

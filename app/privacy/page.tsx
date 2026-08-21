@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { whatsappLink } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "سياسة الخصوصية",
@@ -91,10 +92,15 @@ export default function PrivacyPage() {
       <div className="mt-8 rounded-2xl bg-primary-soft p-6 text-sm leading-relaxed">
         <p className="font-bold text-primary">تواصل معنا</p>
         <p className="mt-1 text-muted">
-          لأي استفسار عن بياناتك أو لممارسة حقوقك، تواصل معنا مباشرةً عبر واتساب أو من خلال{" "}
-          <Link href="/custom" className="font-semibold text-primary hover:underline">
-            نموذج التواصل
-          </Link>
+          لأي استفسار عن بياناتك أو لممارسة حقوقك، تواصل معنا مباشرةً عبر{" "}
+          <a
+            href={whatsappLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-primary hover:underline"
+          >
+            واتساب
+          </a>
           .
         </p>
       </div>
