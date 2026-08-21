@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# مجلد فك ضغط تصدير إنستقرام (مؤقت وكبير — الصور المستوردة تُحفظ في public/instagram)
+/.instagram-export/
+
+# قاعدة البيانات وملفات الزبائن المرفوعة — بيانات شخصية، لا تُرفع أبدًا
+/data/

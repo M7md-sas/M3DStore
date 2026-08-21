@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# M3DStore — متجر الطباعة ثلاثية الأبعاد
 
-## Getting Started
+متجر إلكتروني عربي كامل (RTL) لبيع منتجات الطباعة ثلاثية الأبعاد، مبني بـ Next.js 16 مع قاعدة بيانات SQLite محلية.
 
-First, run the development server:
+## التشغيل
+
+اضغط مرتين على ملف **`تشغيل المتجر.bat`** — أو من الطرفية:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ثم افتح: http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## الصفحات
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| الرابط | الوصف |
+|---|---|
+| `/` | الرئيسية |
+| `/products` | المنتجات (تصفية بالفئة + بحث) |
+| `/custom` | طلب تصميم مخصص (رفع ملف STL/صورة → مراجعتك → دفع بعد موافقتك) |
+| `/cart` → `/checkout` → `/pay/[code]` | السلة → إتمام الطلب → الدفع |
+| `/track` | تتبع الطلب برمز `ORD-` أو `CST-` |
+| `/admin` | **لوحة التحكم الخاصة فيك** (محمية بكلمة مرور) |
 
-## Learn More
+## لوحة التحكم `/admin`
 
-To learn more about Next.js, take a look at the following resources:
+كلمة المرور في ملف `.env.local` (المتغير `ADMIN_PASSWORD`) — **غيّرها فورًا**.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+من اللوحة تقدر:
+- **التصاميم المخصصة**: مراجعة طلب العميل، تحميل ملفه المرفق، تحديد السعر ثم **قبول** (يظهر للعميل رابط دفع) أو **رفض** مع ذكر السبب. بعد الدفع: ابدأ الطباعة → تم الشحن → تم التوصيل.
+- **الطلبات**: عرض كل الطلبات وتغيير حالتها (تم الدفع → قيد التجهيز → تم الشحن → تم التوصيل).
+- **المنتجات**: إضافة / تعديل / إخفاء منتجات.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## إضافة صور حقيقية لمنتجاتك
 
-## Deploy on Vercel
+ضع ملفات الصور (JPG/PNG/WebP) داخل `public/products/` ثم اختر الصورة عند إضافة المنتج. الصور الحالية رسومات SVG مؤقتة.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+لإضافة لوقو متجرك: استبدل أيقونة المكعب في `components/Header.tsx` و `components/Footer.tsx` بصورة اللوقو.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## تفعيل الدفع الحقيقي
+
+المتجر حاليًا في **وضع تجريبي** (زر الدفع يحاكي العملية). للتفعيل الحقيقي:
+
+1. سجّل حساب تاجر في [Moyasar](https://moyasar.com) (بوابة سعودية معتمدة من البنك المركزي — تدعم مدى وApple Pay وSTC Pay) أو [Tap](https://tap.company).
+2. لتقسيط تابي/تمارا: سجّل حساب تاجر في [Tabby](https://tabby.ai) و[Tamara](https://tamara.co).
+3. ضع المفاتيح في `.env.local`:
+   ```
+   MOYASAR_PUBLISHABLE_KEY=pk_live_xxxx
+   MOYASAR_SECRET_KEY=sk_live_xxxx
+   ```
+4. الربط البرمجي جاهز التوصيل في: `components/PaymentPanel.tsx` (واجهة الدفع) و `app/api/pay/route.ts` (تأكيد الدفع — يتحول إلى webhook من البوابة).
+
+> ملاحظة نظامية: للبيع الإلكتروني في السعودية ستحتاج سجلًا تجاريًا أو وثيقة عمل حر لتفعيل حساب التاجر في بوابات الدفع.
+
+## أين تُحفظ البيانات؟
+
+كل شيء محلي في مجلد `data/`:
+- `data/store.db` — المنتجات والطلبات (SQLite)
+- `data/uploads/` — ملفات العملاء المرفوعة
+
+انسخ هذا المجلد احتياطيًا بشكل دوري. إذا نقلت المشروع لمجلد آخر حدّث المسار في `.env.local` (المتغير `M3D_DATA_DIR`).
+
+## إعدادات سريعة
+
+| الإعداد | المكان |
+|---|---|
+| رسوم الشحن (25 ر.س) وحد الشحن المجاني (200 ر.س) | `lib/shipping.ts` |
+| رقم الواتساب | `lib/format.ts` |
+| وسائل الدفع المعروضة | `lib/format.ts` |
+| الألوان | `app/globals.css` |
