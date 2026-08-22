@@ -69,7 +69,7 @@ export default function PaymentPanel({
               value={m.id}
               checked={method === m.id}
               onChange={() => setMethod(m.id)}
-              className="h-4 w-4 accent-[#0f766e]"
+              className="h-4 w-4 accent-[#7a6935]"
             />
             {m.label}
           </label>

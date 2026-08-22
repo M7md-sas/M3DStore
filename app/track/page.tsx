@@ -221,7 +221,7 @@ function TrackContent() {
             href={whatsappLink(`استفسار عن الطلب ${result.code}`)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-line py-3 text-sm font-bold text-[#128C4B] transition-colors hover:bg-primary-soft/40"
+            className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-line py-3 text-sm font-bold text-[#0F7A42] transition-colors hover:bg-primary-soft/40"
           >
             <WhatsAppIcon width={18} height={18} />
             استفسر عن طلبك واتساب

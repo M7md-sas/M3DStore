@@ -1,21 +1,22 @@
 @import "tailwindcss";
 
+/* لوحة الموقع مأخوذة من شعار M3DStore — كل قيمة مفحوصة التباين على الأبيض وعلى خلفيتها */
 :root {
-  --background: #faf9f7;
+  --background: #fbf8f2;      /* أبيض دافئ بدل الرمادي البارد */
   --surface: #ffffff;
-  --foreground: #1f2933;
-  --muted-fg: #5b6b79;
-  --primary: #0f766e;
-  --primary-hover: #115e59;
-  --primary-soft: #e7f4f2;
-  --accent: #d97706;
-  --accent-soft: #fef3e2;
-  --border: #e8e4de;
+  --foreground: #2c2a22;      /* أسود دافئ 14.4:1 */
+  --muted-fg: #6b6250;        /* ثانوي 6.0:1 */
+  --primary: #7a6935;         /* الذهبي الزيتوني من الشعار، مغمَّق ليقرأ كنص 5.4:1 */
+  --primary-hover: #5c4e2a;
+  --primary-soft: #fcf3e4;    /* كريمي الشعار */
+  --accent: #8a5d30;          /* النحاسي، مغمَّق 5.7:1 */
+  --accent-soft: #fbf3ea;
+  --border: #e8e0ce;
   --success: #15803d;
   --success-soft: #ecfdf3;
-  --danger: #dc2626;
-  --danger-soft: #fef2f2;
-  --ring: #0f766e;
+  --danger: #b3261e;
+  --danger-soft: #fdecea;
+  --ring: #7a6935;
 }
 
 @theme inline {

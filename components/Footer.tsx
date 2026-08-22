@@ -65,7 +65,7 @@ export default function Footer({ logo }: { logo: string | null }) {
             href={whatsappLink()}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#128C4B] transition-colors hover:text-[#0c6b39]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#0F7A42] transition-colors hover:text-[#0B6135]"
           >
             <WhatsAppIcon width={18} height={18} />
             واتساب: <span dir="ltr" className="tabular">{WHATSAPP_DISPLAY}</span>

@@ -68,7 +68,7 @@ export default async function ProductPage({
               href={whatsappLink(`استفسار عن المنتج: ${product.name}`)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 font-semibold text-[#128C4B] transition-colors hover:text-[#0c6b39]"
+              className="flex items-center gap-3 font-semibold text-[#0F7A42] transition-colors hover:text-[#0B6135]"
             >
               <WhatsAppIcon width={20} height={20} className="shrink-0" />
               عندك سؤال عن المنتج؟ كلمنا واتساب

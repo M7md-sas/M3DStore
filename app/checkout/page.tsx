@@ -148,7 +148,7 @@ export default function CheckoutPage() {
                     value={m.id}
                     checked={form.payment === m.id}
                     onChange={() => setForm({ ...form, payment: m.id })}
-                    className="h-4 w-4 accent-[#0f766e]"
+                    className="h-4 w-4 accent-[#7a6935]"
                   />
                   {m.label}
                 </label>
