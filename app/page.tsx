@@ -1,19 +1,13 @@
 import Link from "next/link";
+import { Reem_Kufi } from "next/font/google";
 import { getDb } from "@/lib/db";
 import ProductCard, { type ProductRow } from "@/components/ProductCard";
-import PaymentBadges from "@/components/PaymentBadges";
-import {
-  CheckIcon,
-  CubeIcon,
-  PrinterIcon,
-  ShieldIcon,
-  SparklesIcon,
-  TruckIcon,
-  UploadIcon,
-} from "@/components/Icons";
+import { CheckIcon, PrinterIcon, ShieldIcon, TruckIcon, UploadIcon } from "@/components/Icons";
 import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
-import { instagramLink } from "@/lib/format";
-import { InstagramIcon } from "@/components/Icons";
+import HeroLight from "@/components/heroes/HeroLight";
+
+// الصوت الطباعي للعناوين العريضة — كوفي هندسي يوازي زوايا حرف الشعار
+const display = Reem_Kufi({ subsets: ["arabic"], weight: ["600", "700"] });
 
 export const dynamic = "force-dynamic";
 
@@ -24,63 +18,10 @@ export default function HomePage() {
     .all() as ProductRow[];
 
   return (
-    <div className="mx-auto max-w-6xl px-4">
-      {/* Hero */}
-      <section className="grid items-center gap-10 py-14 md:grid-cols-2 md:py-20">
-        <div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-4 py-1.5 text-sm font-bold text-primary">
-            <SparklesIcon width={16} height={16} />
-            صناعة سعودية بطابعات ثلاثية الأبعاد
-          </span>
-          <h1 className="mt-5 text-4xl font-extrabold leading-tight md:text-5xl">
-            أفكارك تتحول إلى
-            <span className="text-primary"> قطع حقيقية</span>
-          </h1>
-          <p className="mt-4 max-w-md text-lg leading-relaxed text-muted">
-            {CUSTOM_ORDERS_ENABLED
-              ? "ديكورات وهدايا مخصصة وقطع عملية مطبوعة بدقة عالية — وإذا عندك فكرة خاصة، ارفعها لنا ونطبعها لك."
-              : "ديكورات وهدايا وقطع عملية مطبوعة بدقة عالية، مصنوعة عندنا قطعة قطعة."}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/products"
-              className="rounded-xl bg-primary px-7 py-3.5 font-bold text-white transition-colors duration-200 hover:bg-primary-hover"
-            >
-              تصفح المنتجات
-            </Link>
-            {CUSTOM_ORDERS_ENABLED ? (
-              <Link
-                href="/custom"
-                className="rounded-xl border-2 border-primary px-7 py-3.5 font-bold text-primary transition-colors duration-200 hover:bg-primary-soft"
-              >
-                اطلب تصميمك الخاص
-              </Link>
-            ) : (
-              <a
-                href={instagramLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border-2 border-primary px-7 py-3.5 font-bold text-primary transition-colors duration-200 hover:bg-primary-soft"
-              >
-                <InstagramIcon width={18} height={18} />
-                شاهد أعمالنا
-              </a>
-            )}
-          </div>
-          <div className="mt-8">
-            <PaymentBadges size="sm" />
-          </div>
-        </div>
-        <div className="relative hidden justify-center md:flex">
-          <div className="flex h-72 w-72 items-center justify-center rounded-[2.5rem] bg-primary-soft text-primary">
-            <CubeIcon width={130} height={130} strokeWidth={1.2} />
-          </div>
-          <div className="absolute -bottom-4 -right-2 flex items-center gap-2 rounded-2xl border border-line bg-surface px-5 py-3 shadow-md">
-            <PrinterIcon width={22} height={22} className="text-accent" />
-            <span className="text-sm font-bold">طباعة بدقة تصل إلى 0.2 ملم</span>
-          </div>
-        </div>
-      </section>
+    <>
+      <HeroLight product={featured[0] ?? null} displayClass={display.className} />
+
+      <div className="mx-auto max-w-6xl px-4">
 
       {/* مزايا */}
       <section className="grid gap-4 md:grid-cols-3">
@@ -174,6 +115,7 @@ export default function HomePage() {
         </section>
       )}
 
-    </div>
+      </div>
+    </>
   );
 }
