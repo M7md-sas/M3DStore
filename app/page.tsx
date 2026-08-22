@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { Reem_Kufi } from "next/font/google";
+import { Amiri } from "next/font/google";
 import { getDb } from "@/lib/db";
 import ProductCard, { type ProductRow } from "@/components/ProductCard";
 import { CheckIcon, PrinterIcon, ShieldIcon, TruckIcon, UploadIcon } from "@/components/Icons";
 import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
-import HeroLight from "@/components/heroes/HeroLight";
+import HeroWorkshop from "@/components/heroes/HeroWorkshop";
 
-// الصوت الطباعي للعناوين العريضة — كوفي هندسي يوازي زوايا حرف الشعار
-const display = Reem_Kufi({ subsets: ["arabic"], weight: ["600", "700"] });
+// الصوت الطباعي للعناوين — خط عربي كلاسيكي بحروف مذنّبة يعيد صدى كلمة الشعار
+const display = Amiri({ subsets: ["arabic"], weight: ["700"] });
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ export default function HomePage() {
 
   return (
     <>
-      <HeroLight product={featured[0] ?? null} displayClass={display.className} />
+      <HeroWorkshop product={featured[0] ?? null} displayClass={display.className} />
 
       <div className="mx-auto max-w-6xl px-4">
 
