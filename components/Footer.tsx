@@ -117,7 +117,7 @@ export default function Footer({ logo }: { logo: string | null }) {
           </p>
           {cr && (
             <p className="font-mono text-[0.68rem] text-muted">
-              السجل التجاري:{" "}
+              {cr.label}:{" "}
               {cr.file ? (
                 <a
                   href={cr.file}

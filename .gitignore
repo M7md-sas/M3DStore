@@ -49,3 +49,6 @@ next-env.d.ts
 # لقطات مراجعة التصميم
 /.impeccable/review/
 /.impeccable/questions/
+
+# وثيقة العمل الحر — تحمل رقم الهوية، لا تُرفع أبدًا
+/public/cr.*

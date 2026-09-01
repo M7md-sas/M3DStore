@@ -1,12 +1,12 @@
 import fs from "fs";
 import path from "path";
 import { projectRoot } from "./db";
-import { CR_NUMBER } from "./site";
+import { CR_NUMBER, CR_LABEL, CR_FILE_PUBLIC } from "./site";
 
 // أول امتداد موجود يفوز — ضع ملف السجل في public باسم cr
 const CR_FILES = ["cr.pdf", "cr.jpg", "cr.jpeg", "cr.png", "cr.webp"];
 
-export type CommercialRegister = { number: string; file: string | null } | null;
+export type CommercialRegister = { number: string; label: string; file: string | null } | null;
 
 /**
  * بيانات السجل التجاري كما تُعرض في التذييل.
@@ -16,10 +16,12 @@ export function commercialRegister(): CommercialRegister {
   const number = CR_NUMBER.trim();
   if (!number) return null;
 
-  for (const name of CR_FILES) {
-    if (fs.existsSync(path.join(projectRoot, "public", name))) {
-      return { number, file: `/${name}` };
+  if (CR_FILE_PUBLIC) {
+    for (const name of CR_FILES) {
+      if (fs.existsSync(path.join(projectRoot, "public", name))) {
+        return { number, label: CR_LABEL, file: `/${name}` };
+      }
     }
   }
-  return { number, file: null };
+  return { number, label: CR_LABEL, file: null };
 }
