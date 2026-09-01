@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { sar } from "@/lib/format";
 import PaymentPanel from "@/components/PaymentPanel";
 import { ShieldIcon } from "@/components/Icons";
+import SaveOrderPanel from "@/components/SaveOrderPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +86,10 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
         >
           تتبع حالة الطلب
         </Link>
+      </div>
+
+      <div className="mt-6">
+        <SaveOrderPanel code={code} />
       </div>
     </div>
   );

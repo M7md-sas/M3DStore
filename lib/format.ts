@@ -70,3 +70,13 @@ export function arabicDate(iso: string): string {
     day: "numeric",
   });
 }
+
+/** نص مدة التجهيز كما يقرأه الزبون — بلا وعد بتاريخ محدد */
+export function leadTimeText(days: number): string {
+  const d = Math.max(0, Math.floor(days || 0));
+  if (d <= 0) return "يجهز في نفس اليوم";
+  if (d === 1) return "يجهز خلال يوم";
+  if (d === 2) return "يجهز خلال يومين";
+  if (d <= 10) return `يجهز خلال ${d} أيام`;
+  return `يجهز خلال ${d} يومًا`;
+}

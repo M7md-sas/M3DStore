@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart, itemKey } from "@/components/cart";
+import { rememberOrder } from "@/lib/my-orders";
 import { sar, PAYMENT_METHODS } from "@/lib/format";
 import { SHIPPING_FLAT, FREE_SHIPPING_OVER } from "@/lib/shipping";
 import { ShieldIcon } from "@/components/Icons";
@@ -60,6 +61,8 @@ export default function CheckoutPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "حدث خطأ، حاول مرة ثانية");
+      // يُحفظ على الجهاز قبل الانتقال، فلو أُغلقت الصفحة يبقى الرمز عند الزبون
+      rememberOrder(data.code);
       clear();
       router.push(`/pay/${data.code}`);
     } catch (err) {

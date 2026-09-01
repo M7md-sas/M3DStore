@@ -133,6 +133,12 @@ function migrate(db: Database.Database) {
   // بيانات الشحنة — تُدخَل يدويًا بعد حجزها لدى شركة الشحن
   addColumn("orders", "carrier", "TEXT NOT NULL DEFAULT ''");
   addColumn("orders", "tracking", "TEXT NOT NULL DEFAULT ''");
+
+  // حارس إرجاع المخزون — يمنع مضاعفة الأرقام لو أُلغي الطلب مرتين
+  addColumn("orders", "stock_restored", "INTEGER NOT NULL DEFAULT 0");
+
+  // مدة تجهيز القطعة بالأيام — القطع تُطبع عند الطلب فليست كلها جاهزة
+  addColumn("products", "lead_days", "INTEGER NOT NULL DEFAULT 3");
 }
 
 function seed(db: Database.Database) {

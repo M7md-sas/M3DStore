@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "./cart";
-import { CartIcon, CheckIcon, MinusIcon, PlusIcon } from "./Icons";
+import { CartIcon, CheckIcon, MinusIcon, PlusIcon, ClockIcon } from "./Icons";
+import { leadTimeText } from "@/lib/format";
 import type { ProductColor, ColorMode } from "@/lib/colors";
 
 export default function AddToCart({
@@ -11,7 +12,7 @@ export default function AddToCart({
   colors,
   colorMode,
 }: {
-  product: { id: number; name: string; price: number; image: string; stock: number };
+  product: { id: number; name: string; price: number; image: string; stock: number; lead_days?: number };
   colors: ProductColor[];
   colorMode: ColorMode;
 }) {
@@ -24,14 +25,6 @@ export default function AddToCart({
     colorMode === "single" && colors.length === 1 ? [colors[0].name] : []
   );
   const [error, setError] = useState("");
-
-  if (product.stock <= 0) {
-    return (
-      <div className="rounded-xl bg-danger-soft px-5 py-4 font-bold text-danger">
-        نفدت الكمية حاليًا — تواصل معنا واتساب وراح نوفرها لك
-      </div>
-    );
-  }
 
   const needsColor = colors.length > 0;
   const multi = colorMode === "multi";
@@ -126,6 +119,13 @@ export default function AddToCart({
             </p>
           )}
         </fieldset>
+      )}
+
+      {product.stock <= 0 && (
+        <p className="inline-flex w-fit items-center gap-2 border-2 border-line bg-background px-3 py-2 text-sm font-bold">
+          <ClockIcon width={16} height={16} className="text-primary" />
+          تُطبع عند الطلب — {leadTimeText(product.lead_days ?? 3)}
+        </p>
       )}
 
       <div className="flex flex-wrap items-center gap-3">

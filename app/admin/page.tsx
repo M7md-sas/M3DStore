@@ -14,7 +14,7 @@ import { parseColors, parseColorMode } from "@/lib/colors";
 type Product = {
   id: number; name: string; description: string; price: number;
   category: string; image: string; stock: number; active: number; colors: string;
-  images: string; color_mode: string;
+  images: string; color_mode: string; lead_days: number;
 };
 type Order = {
   id: number; code: string; customer_name: string; phone: string; city: string;
@@ -339,6 +339,7 @@ const CARRIERS = ["سمسا", "أرامكس", "ناقل", "زاجل", "سبل", 
 
 function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
   const [busy, setBusy] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
   const [ship, setShip] = useState<Record<number, { carrier: string; tracking: string }>>({});
 
   const shipOf = (o: Order) => ship[o.id] ?? { carrier: o.carrier, tracking: o.tracking };
@@ -369,9 +370,39 @@ function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
   if (items.length === 0)
     return <p className="py-10 text-center text-muted">لا توجد طلبات بعد</p>;
 
+  // الزبون ينسى رمزه ويكلّمك واتساب — تبحث بجواله وترسله له
+  const q = query.trim().toLowerCase();
+  const shown = q
+    ? items.filter((o) =>
+        [o.code, o.phone, o.customer_name, o.tracking].some((v) =>
+          String(v ?? "").toLowerCase().includes(q)
+        )
+      )
+    : items;
+
   return (
     <div className="space-y-4">
-      {items.map((o) => {
+      <div>
+        <label htmlFor="order-q" className="mb-1 block text-sm font-bold">
+          ابحث في الطلبات
+        </label>
+        <input
+          id="order-q"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="رقم الجوال أو اسم الزبون أو رمز الطلب"
+          className={inputCls}
+        />
+        <p className="mt-1 text-xs text-muted tabular">
+          {q ? `${shown.length} من ${items.length} طلب` : `${items.length} طلب`}
+        </p>
+      </div>
+
+      {q && shown.length === 0 && (
+        <p className="py-8 text-center text-muted">ما فيه طلب يطابق البحث</p>
+      )}
+
+      {shown.map((o) => {
         const lineItems = JSON.parse(o.items_json) as {
           name: string; qty: number; price: number; colors?: string[];
         }[];
@@ -496,7 +527,7 @@ function safeList(json: string): string[] {
 
 /* ===== تبويب المنتجات ===== */
 function ProductsTab({ items, images, reload }: { items: Product[]; images: string[]; reload: () => void }) {
-  const empty = { name: "", description: "", price: "", category: "ديكورات وهدايا", image: images[0], stock: "10", colors: [] as string[],
+  const empty = { name: "", description: "", price: "", category: "ديكورات وهدايا", image: images[0], stock: "10", leadDays: "3", colors: [] as string[],
     gallery: [images[0]] as string[], colorMode: "single" as "single" | "multi" };
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -542,6 +573,7 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
       image: form.gallery[0] ?? form.image,
       images: form.gallery,
       stock: Number(form.stock),
+      lead_days: Number(form.leadDays),
       colors: form.colors,
       color_mode: form.colorMode,
     };
@@ -589,10 +621,21 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
               value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
           </div>
           <div>
-            <label htmlFor="p-stock" className="mb-1 block text-sm font-bold">الكمية المتوفرة</label>
+            <label htmlFor="p-stock" className="mb-1 block text-sm font-bold">الكمية الجاهزة</label>
             <input id="p-stock" inputMode="numeric" dir="ltr" className={`${inputCls} text-right`}
               value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
+            <p className="mt-1 text-xs text-muted">تنقص تلقائيًا مع كل طلب</p>
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="p-lead" className="mb-1 block text-sm font-bold">مدة التجهيز (أيام)</label>
+          <input id="p-lead" inputMode="numeric" dir="ltr" className={`${inputCls} text-right`}
+            value={form.leadDays} onChange={(e) => setForm({ ...form, leadDays: e.target.value })} />
+          <p className="mt-1 text-xs text-muted">
+            تظهر للزبون. لو نفدت الكمية الجاهزة يبقى المنتج قابلًا للطلب بهذه المدة بدل
+            «نفدت الكمية» — فتقدر تشتري المواد بلا ما توقف البيع.
+          </p>
         </div>
         <div>
           <label htmlFor="p-cat" className="mb-1 block text-sm font-bold">الفئة</label>
@@ -681,6 +724,7 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
                   setForm({
                     name: p.name, description: p.description, price: String(p.price),
                     category: p.category, image: p.image, stock: String(p.stock),
+                    leadDays: String(p.lead_days ?? 3),
                     colors: parseColors(p.colors).map((c) => c.name),
                     gallery: [p.image, ...safeList(p.images)],
                     colorMode: parseColorMode(p.color_mode),

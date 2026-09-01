@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ORDER_STATUS, CUSTOM_STATUS, sar, whatsappLink } from "@/lib/format";
 import { CheckIcon, PackageIcon, SearchIcon, WhatsAppIcon } from "@/components/Icons";
+import { listOrders, forgetOrder, type SavedOrder } from "@/lib/my-orders";
 
 type TrackResult =
   | {
@@ -33,10 +34,15 @@ const CUSTOM_STEPS = ["review", "approved", "paid", "printing", "shipped", "deli
 function TrackContent() {
   const searchParams = useSearchParams();
   const [code, setCode] = useState(searchParams.get("code") ?? "");
+  const [saved, setSaved] = useState<SavedOrder[]>([]);
   const [result, setResult] = useState<TrackResult | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const justPaid = searchParams.get("paid") === "1";
+
+  useEffect(() => {
+    setSaved(listOrders());
+  }, []);
 
   const lookup = useCallback(async (c: string) => {
     if (!c.trim()) return;
@@ -111,6 +117,45 @@ function TrackContent() {
           {loading ? "..." : "تتبع"}
         </button>
       </form>
+
+      {saved.length > 0 && (
+        <section className="mt-6 border-2 border-line bg-surface">
+          <h2 className="border-b-2 border-line px-4 py-2 font-display text-sm font-bold">
+            طلباتك على هذا الجهاز
+          </h2>
+          <ul className="divide-y divide-rule-soft">
+            {saved.map((o) => (
+              <li key={o.code} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCode(o.code);
+                    lookup(o.code);
+                  }}
+                  className="cursor-pointer font-mono text-sm font-bold tabular text-foreground transition-colors hover:text-primary"
+                  dir="ltr"
+                >
+                  {o.code}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    forgetOrder(o.code);
+                    setSaved(listOrders());
+                  }}
+                  aria-label={"إزالة " + o.code + " من هذا الجهاز"}
+                  className="cursor-pointer text-xs text-muted transition-colors hover:text-danger"
+                >
+                  إزالة
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="border-t border-rule-soft px-4 py-2 text-xs text-muted">
+            محفوظة في هذا المتصفح فقط. لو بدّلت جوالك، كلّمنا واتساب ونستخرج رقم طلبك.
+          </p>
+        </section>
+      )}
 
       {error && (
         <p role="alert" className="mt-4 rounded-lg bg-danger-soft px-4 py-3 font-bold text-danger">

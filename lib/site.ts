@@ -18,6 +18,17 @@ export const CR_NUMBER = "FL-287796864";
 export const CR_LABEL = "وثيقة العمل الحر";
 
 /**
+ * رابط التحقق الرسمي في منصة العمل الحر. الجزء الأخير هو رقم الوثيقة
+ * بترميز base64 — فحصناه: لا يحمل رقم هوية ولا اسمًا، ولذلك يُنشر بأمان.
+ */
+export const CR_VERIFY_URL =
+  "https://freelance.sa/certificate-validation/certificate-validation-details/" +
+  Buffer.from(CR_NUMBER).toString("base64");
+
+export const CR_AUTHORITY = "وزارة الموارد البشرية والتنمية الاجتماعية";
+export const CR_EXPIRES = "12 نوفمبر 2026";
+
+/**
  * ملف الوثيقة (public/cr.pdf) لا يُنشر افتراضيًا: وثيقة العمل الحر تحمل
  * رقم الهوية الوطنية والاسم الكامل، ونشرها على موقع عام يكشفهما للجميع.
  * الرقم وحده يكفي نظامًا. فعّلها فقط بنسخة محجوبة الهوية.

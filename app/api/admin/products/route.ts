@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const db = getDb();
   const info = db
     .prepare(
-      "INSERT INTO products (name, description, price, category, image, stock, colors, images, color_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO products (name, description, price, category, image, stock, colors, images, color_mode, lead_days) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     )
     .run(
       name,
@@ -29,7 +29,8 @@ export async function POST(request: Request) {
       Math.max(0, Math.floor(Number(body.stock) || 0)),
       serializeColors(body.colors),
       serializeImages(body.images, image),
-      parseColorMode(body.color_mode)
+      parseColorMode(body.color_mode),
+      Math.max(0, Math.min(60, Math.floor(Number(body.lead_days) || 3)))
     );
   return NextResponse.json({ id: info.lastInsertRowid });
 }
@@ -69,19 +70,26 @@ export async function PATCH(request: Request) {
 
     if (isValidImagePath(body.image)) {
       db.prepare(
-        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?, images = ?, color_mode = ?, image = ? WHERE id = ?"
+        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?, images = ?, color_mode = ?, lead_days = ?, image = ? WHERE id = ?"
       ).run(
         ...fields,
         serializeColors(body.colors),
         serializeImages(body.images, body.image),
         parseColorMode(body.color_mode),
+        Math.max(0, Math.min(60, Math.floor(Number(body.lead_days) || 3))),
         body.image,
         id
       );
     } else {
       db.prepare(
-        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?, color_mode = ? WHERE id = ?"
-      ).run(...fields, serializeColors(body.colors), parseColorMode(body.color_mode), id);
+        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?, color_mode = ?, lead_days = ? WHERE id = ?"
+      ).run(
+        ...fields,
+        serializeColors(body.colors),
+        parseColorMode(body.color_mode),
+        Math.max(0, Math.min(60, Math.floor(Number(body.lead_days) || 3))),
+        id
+      );
     }
   }
   return NextResponse.json({ ok: true });

@@ -71,22 +71,55 @@ export async function POST(request: Request) {
     const total = subtotal + shipping;
     const code = generateCode("ORD");
 
-    db.prepare(
+    const insertOrder = db.prepare(
       `INSERT INTO orders (code, customer_name, phone, city, address, items_json, subtotal, shipping, total, payment_method, notes)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
-      code,
-      customer_name.trim(),
-      phone.trim(),
-      city.trim(),
-      (address ?? "").trim(),
-      JSON.stringify(lineItems),
-      subtotal,
-      shipping,
-      total,
-      payment_method ?? "",
-      String(notes ?? "").trim().slice(0, 1000)
     );
+    // الشرط داخل الجملة نفسها: طلبان متزامنان على آخر قطعة لا يمكن أن ينجحا معًا
+    const takeStock = db.prepare(
+      "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?"
+    );
+
+    // الخصم والإنشاء في معاملة واحدة — لا مخزون يُخصم لطلب لم يُنشأ، ولا عكس
+    const place = db.transaction(() => {
+      for (const item of lineItems) {
+        if (takeStock.run(item.qty, item.id, item.qty).changes === 0) {
+          const left = (
+            db.prepare("SELECT stock FROM products WHERE id = ?").get(item.id) as
+              | { stock: number }
+              | undefined
+          )?.stock;
+          throw new Error(
+            left && left > 0
+              ? `المتوفر من «${item.name}» ${left} فقط`
+              : `نفدت الكمية من «${item.name}»`
+          );
+        }
+      }
+
+      insertOrder.run(
+        code,
+        customer_name.trim(),
+        phone.trim(),
+        city.trim(),
+        (address ?? "").trim(),
+        JSON.stringify(lineItems),
+        subtotal,
+        shipping,
+        total,
+        payment_method ?? "",
+        String(notes ?? "").trim().slice(0, 1000)
+      );
+    });
+
+    try {
+      place();
+    } catch (err) {
+      // رسالة المخزون تخص الزبون؛ أي خطأ آخر يسقط للمعالج العام
+      const message = err instanceof Error ? err.message : "";
+      if (message.includes("«")) return NextResponse.json({ error: message }, { status: 409 });
+      throw err;
+    }
 
     return NextResponse.json({ code });
   } catch {

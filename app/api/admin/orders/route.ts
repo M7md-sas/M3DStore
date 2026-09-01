@@ -35,7 +35,27 @@ export async function PATCH(request: Request) {
   if (!body.status || !ALLOWED.includes(body.status))
     return NextResponse.json({ error: "بيانات غير صالحة" }, { status: 400 });
 
-  const info = db.prepare("UPDATE orders SET status = ? WHERE id = ?").run(body.status, id);
-  if (info.changes === 0) return NextResponse.json({ error: "الطلب غير موجود" }, { status: 404 });
+  const order = db
+    .prepare("SELECT items_json, stock_restored FROM orders WHERE id = ?")
+    .get(id) as { items_json: string; stock_restored: number } | undefined;
+  if (!order) return NextResponse.json({ error: "الطلب غير موجود" }, { status: 404 });
+
+  const giveBack = db.prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+
+  db.transaction(() => {
+    db.prepare("UPDATE orders SET status = ? WHERE id = ?").run(body.status, id);
+
+    // الإلغاء يعيد الكميات مرة واحدة — الحارس يمنع مضاعفتها لو أُلغي الطلب مرتين
+    if (body.status === "cancelled" && order.stock_restored === 0) {
+      try {
+        const items = JSON.parse(order.items_json) as { id: number; qty: number }[];
+        for (const it of items) giveBack.run(Number(it.qty) || 0, Number(it.id));
+      } catch {
+        /* سطر تالف في الطلب لا يمنع تغيير الحالة */
+      }
+      db.prepare("UPDATE orders SET stock_restored = 1 WHERE id = ?").run(id);
+    }
+  })();
+
   return NextResponse.json({ ok: true });
 }

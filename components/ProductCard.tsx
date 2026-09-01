@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { sar } from "@/lib/format";
+import { sar, leadTimeText } from "@/lib/format";
 import { parseColors } from "@/lib/colors";
 
 export type ProductRow = {
@@ -14,6 +14,7 @@ export type ProductRow = {
   colors?: string;
   images?: string;
   color_mode?: string;
+  lead_days?: number;
 };
 
 /** رمز القطعة كما يُختم على ملصق البكرة — ثابت لكل منتج */
@@ -28,7 +29,8 @@ export function partCode(id: number): string {
  */
 export default function ProductCard({ product }: { product: ProductRow }) {
   const colors = parseColors(product.colors);
-  const out = product.stock <= 0;
+  // مخزون صفر لا يعني التوقف: القطعة تُطبع عند الطلب بمدة تجهيزها
+  const madeToOrder = product.stock <= 0;
 
   return (
     <Link
@@ -54,9 +56,9 @@ export default function ProductCard({ product }: { product: ProductRow }) {
           sizes="(max-width: 768px) 50vw, 33vw"
           className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.04]"
         />
-        {out && (
-          <span className="absolute inset-x-0 bottom-0 bg-danger py-1 text-center font-display text-[0.7rem] font-bold tracking-wide text-white">
-            نفدت الكمية
+        {madeToOrder && (
+          <span className="absolute inset-x-0 bottom-0 bg-foreground py-1 text-center font-display text-[0.7rem] font-bold tracking-wide text-white">
+            {leadTimeText(product.lead_days ?? 3)}
           </span>
         )}
       </div>
