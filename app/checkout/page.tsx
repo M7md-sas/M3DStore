@@ -7,6 +7,7 @@ import { useCart, itemKey } from "@/components/cart";
 import { rememberOrder } from "@/lib/my-orders";
 import { sar, PAYMENT_METHODS } from "@/lib/format";
 import { SHIPPING_FLAT, FREE_SHIPPING_OVER } from "@/lib/shipping";
+import { PAYMENT_LIVE } from "@/lib/site";
 import { ShieldIcon } from "@/components/Icons";
 
 const CITIES = [
@@ -129,6 +130,7 @@ export default function CheckoutPage() {
             <p className="mt-1 text-left text-xs text-muted tabular">{form.notes.length} / 1000</p>
           </section>
 
+          {PAYMENT_LIVE ? (
           <section className="rounded-2xl border border-line bg-surface p-6">
             <h2 className="text-lg font-extrabold">وسيلة الدفع</h2>
             <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
@@ -158,6 +160,18 @@ export default function CheckoutPage() {
               ))}
             </div>
           </section>
+          ) : (
+            <section className="rounded-2xl border-2 border-line bg-surface p-6">
+              <h2 className="text-lg font-extrabold">كيف نكمل الطلب</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                بعد ما ترسل بياناتك يُحفظ طلبك برقم، ويوصلك زر يفتح واتساب برسالة جاهزة
+                فيها تفاصيل طلبك. نؤكد لك التوفّر ونتفق على الدفع والتوصيل مباشرة.
+              </p>
+              <p className="mt-2 text-xs text-muted">
+                الدفع الإلكتروني (مدى وApple Pay وSTC Pay) قيد التفعيل.
+              </p>
+            </section>
+          )}
         </div>
 
         <aside className="h-fit rounded-2xl border border-line bg-surface p-6">

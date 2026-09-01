@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { PAYMENT_LIVE } from "@/lib/site";
 
 /**
  * محاكاة إتمام الدفع (وضع تجريبي).
@@ -8,6 +9,13 @@ import { getDb } from "@/lib/db";
  * ويُحدّث حالة الطلب بعد التحقق من التوقيع.
  */
 export async function POST(request: Request) {
+  // حارس: بلا بوابة حقيقية لا يجوز تعليم أي طلب مدفوعًا
+  if (!PAYMENT_LIVE)
+    return NextResponse.json(
+      { error: "الدفع الإلكتروني غير مفعّل حاليًا — التأكيد يتم عبر واتساب" },
+      { status: 503 }
+    );
+
   try {
     const { code, method } = (await request.json()) as { code: string; method: string };
     if (!code) return NextResponse.json({ error: "رمز الطلب مفقود" }, { status: 400 });
