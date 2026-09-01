@@ -3,10 +3,12 @@ import Image from "next/image";
 import PaymentBadges from "./PaymentBadges";
 import { WHATSAPP_DISPLAY, whatsappLink, instagramLink, INSTAGRAM_HANDLE } from "@/lib/format";
 import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
+import { commercialRegister } from "@/lib/cr";
 import { CubeIcon, InstagramIcon, WhatsAppIcon } from "./Icons";
 
 /** تذييل بلغة الملصق: كتل محدودة بخطوط سوداء، وبيانات لا فقرات */
 export default function Footer({ logo }: { logo: string | null }) {
+  const cr = commercialRegister();
   const quickLinks = [
     { href: "/products", label: "جميع المنتجات" },
     ...(CUSTOM_ORDERS_ENABLED ? [{ href: "/custom", label: "اطلب تصميمك الخاص" }] : []),
@@ -109,9 +111,30 @@ export default function Footer({ logo }: { logo: string | null }) {
           </div>
         </div>
 
-        <p className="border-x-2 border-t-2 border-line px-5 py-3 font-mono text-[0.68rem] text-muted">
-          © {new Date().getFullYear()} M3DSTORE — الرياض، السعودية
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-x-2 border-t-2 border-line px-5 py-3">
+          <p className="font-mono text-[0.68rem] text-muted">
+            © {new Date().getFullYear()} M3DSTORE — الرياض، السعودية
+          </p>
+          {cr && (
+            <p className="font-mono text-[0.68rem] text-muted">
+              السجل التجاري:{" "}
+              {cr.file ? (
+                <a
+                  href={cr.file}
+                  download
+                  className="font-bold text-foreground underline decoration-2 underline-offset-4 transition-colors hover:text-primary"
+                  dir="ltr"
+                >
+                  {cr.number}
+                </a>
+              ) : (
+                <span className="font-bold text-foreground" dir="ltr">
+                  {cr.number}
+                </span>
+              )}
+            </p>
+          )}
+        </div>
       </div>
     </footer>
   );
