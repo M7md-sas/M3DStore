@@ -129,6 +129,10 @@ function migrate(db: Database.Database) {
 
   // ملاحظة الزبون على الطلب
   addColumn("orders", "notes", "TEXT NOT NULL DEFAULT ''");
+
+  // بيانات الشحنة — تُدخَل يدويًا بعد حجزها لدى شركة الشحن
+  addColumn("orders", "carrier", "TEXT NOT NULL DEFAULT ''");
+  addColumn("orders", "tracking", "TEXT NOT NULL DEFAULT ''");
 }
 
 function seed(db: Database.Database) {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cairo } from "next/font/google";
+import { Cairo, Alexandria, Courier_Prime } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/components/cart";
 import Header from "@/components/Header";
@@ -12,6 +12,20 @@ const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "600", "700", "800"],
+});
+
+// صوت الملصق: غروتيسك صناعي للأسماء والأسعار
+const alexandria = Alexandria({
+  variable: "--font-display",
+  subsets: ["arabic", "latin"],
+  weight: ["500", "700", "800"],
+});
+
+// خط الآلة للأرقام والرموز — بيانات ومقاسات، لا زينة تقنية
+const mono = Courier_Prime({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -43,11 +57,29 @@ export default function RootLayout({
   const logo = findLogo();
 
   return (
-    <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
+    <html
+      lang="ar"
+      dir="rtl"
+      className={`${cairo.variable} ${alexandria.variable} ${mono.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col">
+        {/*
+          THESIS: هذا المتجر نظام ملصقات مواصفات، لا صفحة تسويق. يرفض شاشة
+          البطل التي تفتح بفقرة كلام على بياض قبل أن يرى الزائر قطعة واحدة.
+          OWN-WORLD: ملصق بكرة الفتيل — بطاقة بيضاء بحدود سوداء حادة، شريط
+          علامة زيتوني #8B7744 أعلاها، شبكة مواصفات بخط آلة، ومربع لون ضخم
+          يملك نصف البطاقة. الحيوية من رقاقات ألوان القطع لا من لوحة المصمم.
+          STORY: الزائر جاي من إنستقرام لقطعة رخيصة رآها. يفهم في ثانية أنها
+          تُطبع هنا بلونه، ويضغط شراء.
+          FIRST VIEWPORT: جدار ملصقات فورًا بلا مقدمة — تسع قطع بأسعارها
+          وألوانها المتاحة، وأول إجراء «أضف للسلة» داخل الملصق نفسه.
+          FORM: ملصق بكرة الفتيل، المرتبة الأولى في قائمتي، مثبّت باختيار
+          صاحب المتجر فوق قرعة seed 3d45d827.
+          FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+        */}
         <CartProvider>
           <Header logo={logo} />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pb-16 md:pb-0">{children}</main>
           <Footer logo={logo} />
           <WhatsAppButton />
         </CartProvider>

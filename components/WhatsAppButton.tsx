@@ -1,16 +1,21 @@
 import { whatsappLink } from "@/lib/format";
 import { WhatsAppIcon } from "./Icons";
 
+/**
+ * شارة واتساب بلغة الملصق: مستطيل محدود بخط أسود لا فقاعة عائمة،
+ * ومكانها أسفل اليسار بحيث لا تغطي شبكة القطع.
+ */
 export default function WhatsAppButton() {
   return (
     <a
       href={whatsappLink("مرحبًا، عندي استفسار عن متجر M3DStore")}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="تواصل معنا عبر واتساب"
-      className="fixed bottom-5 left-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform duration-200 hover:scale-105"
+      aria-label="اسأل عبر واتساب"
+      className="fixed bottom-4 left-4 z-50 inline-flex items-center gap-2 border-2 border-line bg-surface p-2.5 font-display text-sm font-bold text-foreground shadow-[3px_3px_0_0_var(--foreground)] transition-transform duration-200 hover:-translate-y-0.5 md:px-3 md:py-2"
     >
-      <WhatsAppIcon width={28} height={28} />
+      <WhatsAppIcon width={18} height={18} className="text-[#0C6B39]" />
+      <span className="hidden md:inline">اسأل واتساب</span>
     </a>
   );
 }

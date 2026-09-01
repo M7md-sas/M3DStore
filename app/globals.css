@@ -1,22 +1,27 @@
 @import "tailwindcss";
 
-/* لوحة الموقع مأخوذة من شعار M3DStore — كل قيمة مفحوصة التباين على الأبيض وعلى خلفيتها */
+/*
+  عالم الملصق: كل قطعة بطاقة مواصفات على بكرة فتيل.
+  الورقة بيضاء ناصعة، الأرضية رمادية صناعية حتى يقرأ الملصق كجسم لا كفراغ،
+  والحبر أسود دافئ. ألوان الشعار تحمل العلامة لا الصفحة.
+*/
 :root {
-  --background: #fbf8f2;      /* أبيض دافئ بدل الرمادي البارد */
-  --surface: #ffffff;
-  --foreground: #2c2a22;      /* أسود دافئ 14.4:1 */
-  --muted-fg: #6b6250;        /* ثانوي 6.0:1 */
-  --primary: #7a6935;         /* الذهبي الزيتوني من الشعار، مغمَّق ليقرأ كنص 5.4:1 */
+  --background: #e9e6de;      /* أرضية الورشة — الملصق الأبيض يطفو عليها */
+  --surface: #ffffff;         /* ورق الملصق */
+  --foreground: #14130f;      /* حبر حراري أسود دافئ 17.6:1 */
+  --muted-fg: #5f5a4e;        /* بيانات ثانوية 6.4:1 على الأبيض */
+  --primary: #6e5e33;         /* زيتوني الشعار — يعبر 4.5:1 على الأبيض والأرضية معًا */
   --primary-hover: #5c4e2a;
   --primary-soft: #fcf3e4;    /* كريمي الشعار */
-  --accent: #8a5d30;          /* النحاسي، مغمَّق 5.7:1 */
+  --accent: #8a5d30;          /* نحاسي الشعار 5.7:1 */
   --accent-soft: #fbf3ea;
-  --border: #e8e0ce;
+  --border: #14130f;          /* حدّ الملصق أسود حاد، لا رمادي باهت */
+  --rule-soft: #d9d4c6;       /* خطوط داخل شبكة المواصفات */
   --success: #15803d;
   --success-soft: #ecfdf3;
   --danger: #b3261e;
   --danger-soft: #fdecea;
-  --ring: #7a6935;
+  --ring: #14130f;
 }
 
 @theme inline {
@@ -34,7 +39,10 @@
   --color-success-soft: var(--success-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-rule-soft: var(--rule-soft);
   --font-sans: var(--font-cairo), "Segoe UI", Tahoma, sans-serif;
+  --font-display: var(--font-display), var(--font-cairo), Tahoma, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, "Courier New", monospace;
   --radius-card: 1rem;
 }
 
@@ -45,8 +53,8 @@ body {
 }
 
 ::selection {
-  background: var(--primary-soft);
-  color: var(--primary-hover);
+  background: var(--primary);
+  color: #ffffff;
 }
 
 :focus-visible {

@@ -20,6 +20,7 @@ type Order = {
   id: number; code: string; customer_name: string; phone: string; city: string;
   address: string; items_json: string; subtotal: number; shipping: number;
   total: number; payment_method: string; status: string; created_at: string; notes: string;
+  carrier: string; tracking: string;
 };
 type CustomReq = {
   id: number; code: string; customer_name: string; phone: string; description: string;
@@ -333,8 +334,26 @@ function NextStepBtn({ onClick, label, busy }: { onClick: () => void; label: str
 }
 
 /* ===== تبويب الطلبات ===== */
+/** شركات الشحن الشائعة في السعودية — القائمة للاختيار السريع لا للربط الآلي */
+const CARRIERS = ["سمسا", "أرامكس", "ناقل", "زاجل", "سبل", "تريوتو", "أخرى"];
+
 function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
   const [busy, setBusy] = useState<number | null>(null);
+  const [ship, setShip] = useState<Record<number, { carrier: string; tracking: string }>>({});
+
+  const shipOf = (o: Order) => ship[o.id] ?? { carrier: o.carrier, tracking: o.tracking };
+
+  const saveShipment = async (o: Order) => {
+    const s = shipOf(o);
+    setBusy(o.id);
+    await fetch("/api/admin/orders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: o.id, carrier: s.carrier, tracking: s.tracking }),
+    });
+    setBusy(null);
+    reload();
+  };
 
   const setStatus = async (id: number, status: string) => {
     setBusy(id);
@@ -403,6 +422,61 @@ function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
                 <p className="mt-1 whitespace-pre-line text-sm leading-relaxed">{o.notes}</p>
               </div>
             )}
+
+            {/* الشحنة — تُحجز عند شركة الشحن ثم يُلصق رقمها هنا ليراه الزبون في صفحة التتبع */}
+            <div className="mt-3 rounded-xl border border-line p-4">
+              <p className="text-xs font-bold text-muted">الشحنة</p>
+              <div className="mt-2 flex flex-wrap items-end gap-2">
+                <div className="min-w-36">
+                  <label htmlFor={`car-${o.id}`} className="mb-1 block text-xs font-bold">
+                    شركة الشحن
+                  </label>
+                  <select
+                    id={`car-${o.id}`}
+                    value={shipOf(o).carrier}
+                    onChange={(e) =>
+                      setShip((s) => ({ ...s, [o.id]: { ...shipOf(o), carrier: e.target.value } }))
+                    }
+                    className={`${inputCls} cursor-pointer py-2`}
+                  >
+                    <option value="">— اختر —</option>
+                    {CARRIERS.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="min-w-44 flex-1">
+                  <label htmlFor={`trk-${o.id}`} className="mb-1 block text-xs font-bold">
+                    رقم البوليصة
+                  </label>
+                  <input
+                    id={`trk-${o.id}`}
+                    dir="ltr"
+                    value={shipOf(o).tracking}
+                    onChange={(e) =>
+                      setShip((s) => ({ ...s, [o.id]: { ...shipOf(o), tracking: e.target.value } }))
+                    }
+                    placeholder="مثال: 4512389776"
+                    className={`${inputCls} py-2 text-left`}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => saveShipment(o)}
+                  disabled={busy === o.id}
+                  className="cursor-pointer rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+                >
+                  حفظ
+                </button>
+              </div>
+              {o.tracking && (
+                <p className="mt-2 text-xs text-success">
+                  ✓ الزبون يشوف رقم البوليصة في صفحة تتبّع الطلب
+                </p>
+              )}
+            </div>
           </div>
         );
       })}

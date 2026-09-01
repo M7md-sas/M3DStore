@@ -1,121 +1,153 @@
 import Link from "next/link";
-import { Amiri } from "next/font/google";
 import { getDb } from "@/lib/db";
 import ProductCard, { type ProductRow } from "@/components/ProductCard";
-import { CheckIcon, PrinterIcon, ShieldIcon, TruckIcon, UploadIcon } from "@/components/Icons";
-import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
-import HeroWorkshop from "@/components/heroes/HeroWorkshop";
-
-// الصوت الطباعي للعناوين — خط عربي كلاسيكي بحروف مذنّبة يعيد صدى كلمة الشعار
-const display = Amiri({ subsets: ["arabic"], weight: ["700"] });
+import { instagramLink, INSTAGRAM_HANDLE, whatsappLink } from "@/lib/format";
+import { InstagramIcon, WhatsAppIcon, PrinterIcon, TruckIcon } from "@/components/Icons";
+import { parseColors } from "@/lib/colors";
+import { COLOR_PALETTE } from "@/lib/colors";
 
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   const db = getDb();
-  const featured = db
-    .prepare("SELECT * FROM products WHERE active = 1 ORDER BY id LIMIT 4")
+  const products = db
+    .prepare("SELECT * FROM products WHERE active = 1 ORDER BY price")
     .all() as ProductRow[];
 
+  // ألوان الرفّ كله — الحيوية تجي من ألوان القطع لا من لوحة المصمم
+  const stocked = new Set<string>();
+  for (const p of products) for (const c of parseColors(p.colors)) stocked.add(c.name);
+  const shelfColors = COLOR_PALETTE.filter((c) => stocked.has(c.name));
+
+  const cheapest = products.length ? Math.min(...products.map((p) => p.price)) : 0;
+
   return (
-    <>
-      <HeroWorkshop product={featured[0] ?? null} displayClass={display.className} />
+    <div className="mx-auto max-w-6xl px-4 py-6 md:py-8">
+      {/* لوح المخزون — سطر واحد يقول كل شيء، ثم القطع فورًا */}
+      <section className="border-2 border-line bg-surface">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b-2 border-line bg-primary px-4 py-3">
+          <h1 className="font-display text-lg font-bold tracking-wide text-white md:text-xl">
+            قطع مطبوعة عند الطلب — تختار اللون ونطبعها لك
+          </h1>
+          <a
+            href={instagramLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 border border-white/40 px-3 py-1.5 font-mono text-xs font-bold text-white transition-colors hover:bg-white hover:text-primary"
+          >
+            <InstagramIcon width={15} height={15} />
+            <span dir="ltr">@{INSTAGRAM_HANDLE}</span>
+          </a>
+        </div>
 
-      <div className="mx-auto max-w-6xl px-4">
+        {/* الفواصل بـgap على أرضية سوداء — أنظف من حدود لكل خلية تتضاعف عند التلاصق */}
+        <dl className="grid grid-cols-2 gap-px bg-line text-center md:grid-cols-4">
+          {[
+            ["قطعة معروضة", String(products.length)],
+            ["تبدأ من", `${cheapest} ر.س`],
+            ["دقة الطبقة", "0.2 مم"],
+            ["لون متوفر", String(shelfColors.length)],
+          ].map(([label, value]) => (
+            <div key={label} className="bg-surface px-3 py-3">
+              <dt className="font-mono text-[0.62rem] tracking-[0.12em] text-muted">{label}</dt>
+              <dd className="mt-0.5 font-display text-xl font-extrabold text-foreground tabular">
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
 
-      {/* مزايا */}
-      <section className="grid gap-4 md:grid-cols-3">
-        {[
-          {
-            icon: <TruckIcon width={24} height={24} />,
-            title: "شحن لكل المملكة",
-            desc: "توصيل سريع لجميع المدن، ومجاني للطلبات فوق 200 ر.س",
-          },
-          {
-            icon: <ShieldIcon width={24} height={24} />,
-            title: "دفع آمن 100%",
-            desc: "مدى، Apple Pay، STC Pay، تابي وتمارا عبر بوابات معتمدة",
-          },
-          CUSTOM_ORDERS_ENABLED
-            ? {
-                icon: <UploadIcon width={24} height={24} />,
-                title: "تصميمك الخاص",
-                desc: "ارفع ملفك أو اشرح فكرتك، نراجعها ونرد عليك قبل أي دفع",
-              }
-            : {
-                icon: <PrinterIcon width={24} height={24} />,
-                title: "طباعة بدقة 0.2 ملم",
-                desc: "كل قطعة مطبوعة عند الطلب بخامات متينة وجودة عالية",
-              },
-        ].map((f) => (
-          <div key={f.title} className="flex gap-4 rounded-2xl border border-line bg-surface p-5">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-              {f.icon}
+        {shelfColors.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t-2 border-line px-4 py-3">
+            <span className="font-mono text-[0.62rem] tracking-[0.12em] text-muted">
+              الفتيل المتوفر
             </span>
-            <div>
-              <h2 className="font-bold">{f.title}</h2>
-              <p className="mt-1 text-sm leading-relaxed text-muted">{f.desc}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {shelfColors.map((c) => (
+                <span
+                  key={c.name}
+                  title={c.name}
+                  className="h-5 w-5 border border-line"
+                  style={{ backgroundColor: c.hex }}
+                />
+              ))}
             </div>
           </div>
-        ))}
+        )}
       </section>
 
-      {/* منتجات مميزة */}
-      <section className="py-14">
-        <div className="mb-6 flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-extrabold">منتجات مميزة</h2>
-            <p className="mt-1 text-muted">الأكثر طلبًا من عملائنا</p>
-          </div>
+      {/* الرفّ — هذا هو المتجر */}
+      <section className="mt-6">
+        <div className="mb-3 flex items-baseline justify-between gap-4 border-b-2 border-line pb-2">
+          <h2 className="font-display text-base font-bold tracking-wide text-foreground">
+            كل القطع
+          </h2>
           <Link
             href="/products"
-            className="rounded-lg px-4 py-2 text-sm font-bold text-primary transition-colors duration-200 hover:bg-primary-soft"
+            className="font-mono text-xs font-bold text-primary underline decoration-2 underline-offset-4 transition-colors hover:text-foreground"
           >
-            عرض الكل
+            تصفية حسب الفئة
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {featured.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
-      </section>
 
-      {/* كيف يعمل الطلب المخصص — يظهر فقط عند تفعيل طلبات التصميم */}
-      {CUSTOM_ORDERS_ENABLED && (
-        <section className="rounded-3xl bg-primary-soft/60 p-8 md:p-12">
-          <h2 className="text-center text-2xl font-extrabold">
-            عندك فكرة؟ نطبعها لك في 4 خطوات
-          </h2>
-          <div className="mt-10 grid gap-8 md:grid-cols-4">
-            {[
-              { n: "1", t: "أرسل فكرتك", d: "ارفع ملف التصميم أو صورة واشرح طلبك" },
-              { n: "2", t: "نراجع الطلب", d: "نتأكد أن التصميم قابل للطباعة ونحدد السعر" },
-              { n: "3", t: "توافق وتدفع", d: "بعد قبول الطلب يصلك رابط دفع آمن" },
-              { n: "4", t: "نطبع ونشحن", d: "نبدأ الطباعة فورًا ويوصلك المنتج لباب البيت" },
-            ].map((s) => (
-              <div key={s.n} className="text-center">
-                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-extrabold text-white tabular">
-                  {s.n}
-                </span>
-                <h3 className="mt-4 font-bold">{s.t}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-muted">{s.d}</p>
-              </div>
+        {products.length === 0 ? (
+          <div className="border-2 border-dashed border-line bg-surface p-12 text-center">
+            <p className="font-display text-lg font-bold">الرفّ فاضي حاليًا</p>
+            <p className="mt-1 text-sm text-muted">سعّر منتجاتك من لوحة التحكم ليظهروا هنا.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
-          <div className="mt-10 text-center">
-            <Link
-              href="/custom"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3.5 font-bold text-white transition-colors duration-200 hover:bg-primary-hover"
-            >
-              <CheckIcon width={18} height={18} />
-              ابدأ طلبك المخصص الآن
-            </Link>
-          </div>
-        </section>
-      )}
+        )}
+      </section>
 
-      </div>
-    </>
+      {/* الإثبات — ثلاثة أسطر بيانات، لا بطاقات أيقونات */}
+      <section className="mt-6 border-2 border-line bg-surface">
+        <h2 className="border-b-2 border-line bg-foreground px-4 py-2 font-display text-sm font-bold tracking-wide text-white">
+          كيف تشتغل الطلبية
+        </h2>
+        <div className="divide-y divide-rule-soft">
+          {[
+            {
+              icon: <PrinterIcon width={20} height={20} />,
+              t: "ما فيه مخزون جاهز",
+              d: "القطعة ما هي موجودة قبل طلبك. تُطبع بعده بخامة PLA، طبقة بسمك 0.2 مم.",
+            },
+            {
+              icon: <TruckIcon width={20} height={20} />,
+              t: "الشحن 25 ر.س، ومجاني فوق 200",
+              d: "لكل مدن المملكة، ويوصلك رمز تتبّع تشوف فيه حالة الطلب أول بأول.",
+            },
+            {
+              icon: <WhatsAppIcon width={20} height={20} />,
+              t: "تبي لونًا أو مقاسًا غير المعروض؟",
+              d: "كلّمنا واتساب قبل الطلب ونقول لك يصير أو ما يصير، بصراحة.",
+            },
+          ].map((row) => (
+            <div key={row.t} className="flex gap-3 px-4 py-3">
+              <span className="mt-0.5 shrink-0 text-primary">{row.icon}</span>
+              <div>
+                <h3 className="font-display text-sm font-bold text-foreground">{row.t}</h3>
+                <p className="mt-0.5 text-sm leading-relaxed text-muted">{row.d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="border-t-2 border-line px-4 py-3">
+          <a
+            href={whatsappLink("مرحبًا، عندي سؤال عن قطعة في M3DStore")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 border-2 border-line px-4 py-2 font-display text-sm font-bold text-foreground transition-colors hover:bg-foreground hover:text-white"
+          >
+            <WhatsAppIcon width={16} height={16} />
+            اسأل قبل ما تطلب
+          </a>
+        </div>
+      </section>
+    </div>
   );
 }

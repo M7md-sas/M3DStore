@@ -11,9 +11,18 @@ export async function POST(request: Request) {
 
     if (trimmed.startsWith("ORD-")) {
       const order = db
-        .prepare("SELECT code, status, total, items_json, city, created_at FROM orders WHERE code = ?")
+        .prepare("SELECT code, status, total, items_json, city, created_at, carrier, tracking FROM orders WHERE code = ?")
         .get(trimmed) as
-        | { code: string; status: string; total: number; items_json: string; city: string; created_at: string }
+        | {
+            code: string;
+            status: string;
+            total: number;
+            items_json: string;
+            city: string;
+            created_at: string;
+            carrier: string;
+            tracking: string;
+          }
         | undefined;
       if (!order) return NextResponse.json({ error: "ما لقينا طلب بهذا الرمز" }, { status: 404 });
       return NextResponse.json({
@@ -23,6 +32,8 @@ export async function POST(request: Request) {
         total: order.total,
         city: order.city,
         created_at: order.created_at,
+        carrier: order.carrier,
+        tracking: order.tracking,
         items: JSON.parse(order.items_json),
       });
     }

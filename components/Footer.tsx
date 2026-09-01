@@ -3,86 +3,115 @@ import Image from "next/image";
 import PaymentBadges from "./PaymentBadges";
 import { WHATSAPP_DISPLAY, whatsappLink, instagramLink, INSTAGRAM_HANDLE } from "@/lib/format";
 import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
-import { CubeIcon, InstagramIcon, ShieldIcon, TruckIcon, WhatsAppIcon } from "./Icons";
+import { CubeIcon, InstagramIcon, WhatsAppIcon } from "./Icons";
 
+/** تذييل بلغة الملصق: كتل محدودة بخطوط سوداء، وبيانات لا فقرات */
 export default function Footer({ logo }: { logo: string | null }) {
+  const quickLinks = [
+    { href: "/products", label: "جميع المنتجات" },
+    ...(CUSTOM_ORDERS_ENABLED ? [{ href: "/custom", label: "اطلب تصميمك الخاص" }] : []),
+    { href: "/track", label: "تتبّع طلبك" },
+    { href: "/cart", label: "سلة المشتريات" },
+  ];
+
   return (
-    <footer className="mt-16 border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-3">
-        <div>
-          <div className="flex items-center gap-2 text-primary">
-            {logo ? (
-              <Image
-                src={logo}
-                alt="M3DStore"
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-xl object-cover"
-              />
-            ) : (
-              <CubeIcon width={26} height={26} />
-            )}
-            <span className="text-lg font-bold">M3DStore</span>
+    <footer className="mt-10 border-t-2 border-line bg-surface">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="grid gap-0 border-x-2 border-line md:grid-cols-3">
+          {/* العلامة */}
+          <div className="border-b-2 border-line p-5 md:border-b-0 md:border-l-2">
+            <div className="flex items-center gap-2.5">
+              {logo ? (
+                <Image
+                  src={logo}
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 border border-line object-cover"
+                />
+              ) : (
+                <CubeIcon width={26} height={26} className="text-primary" />
+              )}
+              <span className="font-display text-lg font-extrabold tracking-[0.06em]">
+                M3DSTORE
+              </span>
+            </div>
+            <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
+              قطع مطبوعة ثلاثية الأبعاد تُصنع بعد الطلب — ديكورات، هدايا، وقطع عملية.
+            </p>
+            <div className="mt-4 flex flex-col gap-2">
+              <a
+                href={whatsappLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-fit items-center gap-2 font-mono text-sm font-bold text-[#0C6B39] transition-colors hover:text-[#094B28]"
+              >
+                <WhatsAppIcon width={16} height={16} />
+                <span dir="ltr">{WHATSAPP_DISPLAY}</span>
+              </a>
+              <a
+                href={instagramLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-fit items-center gap-2 font-mono text-sm font-bold text-[#C13584] transition-colors hover:text-[#94266a]"
+              >
+                <InstagramIcon width={16} height={16} />
+                <span dir="ltr">@{INSTAGRAM_HANDLE}</span>
+              </a>
+            </div>
           </div>
-          <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
-            متجر سعودي متخصص في منتجات الطباعة ثلاثية الأبعاد — ديكورات، هدايا، قطع
-            عملية، وتصاميم مخصصة حسب طلبك.
-          </p>
+
+          {/* الروابط */}
+          <div className="border-b-2 border-line p-5 md:border-b-0 md:border-l-2">
+            <h3 className="font-mono text-[0.62rem] tracking-[0.12em] text-muted">روابط</h3>
+            <ul className="mt-3 space-y-2">
+              {quickLinks.map((l) => (
+                <li key={l.href}>
+                  <Link
+                    className="font-display text-sm font-bold text-foreground transition-colors hover:text-primary"
+                    href={l.href}
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <h3 className="mt-5 font-mono text-[0.62rem] tracking-[0.12em] text-muted">قانوني</h3>
+            <ul className="mt-3 space-y-2">
+              {[
+                { href: "/privacy", label: "سياسة الخصوصية" },
+                { href: "/terms", label: "الشروط والأحكام" },
+                { href: "/returns", label: "الإرجاع والاستبدال" },
+              ].map((l) => (
+                <li key={l.href}>
+                  <Link
+                    className="text-sm text-muted transition-colors hover:text-primary"
+                    href={l.href}
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* الشحن والدفع */}
+          <div className="p-5">
+            <h3 className="font-mono text-[0.62rem] tracking-[0.12em] text-muted">الشحن</h3>
+            <p className="mt-2 font-display text-sm font-bold">
+              25 ر.س لكل المملكة — مجاني فوق 200 ر.س
+            </p>
+
+            <h3 className="mt-5 font-mono text-[0.62rem] tracking-[0.12em] text-muted">الدفع</h3>
+            <div className="mt-2">
+              <PaymentBadges size="sm" />
+            </div>
+          </div>
         </div>
 
-        <div>
-          <h3 className="mb-3 text-sm font-bold">روابط سريعة</h3>
-          <ul className="space-y-2 text-sm">
-            <li><Link className="text-muted transition-colors hover:text-primary" href="/products">جميع المنتجات</Link></li>
-            {CUSTOM_ORDERS_ENABLED && (
-              <li><Link className="text-muted transition-colors hover:text-primary" href="/custom">اطلب تصميمك الخاص</Link></li>
-            )}
-            <li><Link className="text-muted transition-colors hover:text-primary" href="/track">تتبع طلبك</Link></li>
-            <li><Link className="text-muted transition-colors hover:text-primary" href="/cart">سلة المشتريات</Link></li>
-          </ul>
-          <h3 className="mb-3 mt-5 text-sm font-bold">قانوني</h3>
-          <ul className="space-y-2 text-sm">
-            <li><Link className="text-muted transition-colors hover:text-primary" href="/privacy">سياسة الخصوصية</Link></li>
-            <li><Link className="text-muted transition-colors hover:text-primary" href="/terms">الشروط والأحكام</Link></li>
-            <li><Link className="text-muted transition-colors hover:text-primary" href="/returns">الإرجاع والاستبدال</Link></li>
-          </ul>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <h3 className="mb-3 text-sm font-bold">الدفع الآمن</h3>
-            <PaymentBadges size="sm" />
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted">
-            <ShieldIcon width={18} height={18} className="text-success" />
-            دفع آمن ومشفّر عبر بوابات معتمدة في السعودية
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted">
-            <TruckIcon width={18} height={18} className="text-primary" />
-            شحن لجميع مدن المملكة
-          </div>
-          <a
-            href={whatsappLink()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#0F7A42] transition-colors hover:text-[#0B6135]"
-          >
-            <WhatsAppIcon width={18} height={18} />
-            واتساب: <span dir="ltr" className="tabular">{WHATSAPP_DISPLAY}</span>
-          </a>
-          <a
-            href={instagramLink()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm font-semibold text-[#C13584] transition-colors hover:text-[#94266a]"
-          >
-            <InstagramIcon width={18} height={18} />
-            إنستقرام: <span dir="ltr">@{INSTAGRAM_HANDLE}</span>
-          </a>
-        </div>
-      </div>
-      <div className="border-t border-line py-4 text-center text-xs text-muted">
-        © {new Date().getFullYear()} M3DStore — جميع الحقوق محفوظة
+        <p className="border-x-2 border-t-2 border-line px-5 py-3 font-mono text-[0.68rem] text-muted">
+          © {new Date().getFullYear()} M3DSTORE — الرياض، السعودية
+        </p>
       </div>
     </footer>
   );

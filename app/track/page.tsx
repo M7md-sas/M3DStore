@@ -14,7 +14,9 @@ type TrackResult =
       total: number;
       city: string;
       created_at: string;
-      items: { name: string; qty: number; price: number }[];
+      carrier: string;
+      tracking: string;
+      items: { name: string; qty: number; price: number; colors?: string[] }[];
     }
   | {
       type: "custom";
@@ -187,6 +189,22 @@ function TrackContent() {
                 <span>الإجمالي</span>
                 <span className="text-primary tabular">{sar(result.total)}</span>
               </div>
+
+              {result.tracking && (
+                <div className="mt-4 rounded-xl bg-primary-soft p-4">
+                  <p className="text-xs font-bold text-primary">بيانات الشحنة</p>
+                  <p className="mt-1 text-sm">
+                    {result.carrier && <span className="font-bold">{result.carrier} — </span>}
+                    رقم البوليصة:{" "}
+                    <span dir="ltr" className="font-mono font-bold tabular">
+                      {result.tracking}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-xs text-muted">
+                    تابع شحنتك من موقع شركة الشحن بهذا الرقم.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -221,7 +239,7 @@ function TrackContent() {
             href={whatsappLink(`استفسار عن الطلب ${result.code}`)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-line py-3 text-sm font-bold text-[#0F7A42] transition-colors hover:bg-primary-soft/40"
+            className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-line py-3 text-sm font-bold text-[#0C6B39] transition-colors hover:bg-primary-soft/40"
           >
             <WhatsAppIcon width={18} height={18} />
             استفسر عن طلبك واتساب

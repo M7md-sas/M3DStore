@@ -1,6 +1,7 @@
 "use client";
 
 import { COLOR_PALETTE } from "@/lib/colors";
+import { CheckIcon } from "@/components/Icons";
 
 /**
  * اختيار الألوان المتوفرة فعليًا لدى صاحب المتجر.
@@ -45,28 +46,38 @@ export default function ColorPicker({
               type="button"
               onClick={() => toggle(c.name)}
               aria-pressed={on}
-              className={`flex cursor-pointer items-center gap-1.5 rounded-lg border-2 px-2 py-1 text-xs font-semibold transition-colors duration-200 ${
+              className={`flex cursor-pointer items-center gap-1.5 border-2 px-2.5 py-1.5 text-xs font-bold transition-colors duration-200 ${
                 on
-                  ? "border-primary bg-primary-soft text-primary"
-                  : "border-line bg-surface text-muted hover:border-primary/40"
+                  ? "border-foreground bg-foreground text-white"
+                  : "border-line/25 bg-surface text-muted hover:border-foreground"
               }`}
             >
               <span
                 aria-hidden
-                className="h-3.5 w-3.5 shrink-0 rounded-full border border-line"
+                className={`flex h-4 w-4 shrink-0 items-center justify-center border ${
+                  on ? "border-white/60" : "border-line/40"
+                }`}
                 style={{ backgroundColor: c.hex }}
               />
               {c.name}
+              {on && <CheckIcon width={12} height={12} className="shrink-0" />}
             </button>
           );
         })}
       </div>
 
-      <p className="mt-1.5 text-xs text-muted">
-        {selected.length === 0
-          ? "بدون تحديد لون، لن يُطلب من الزبون اختيار لون إطلاقًا."
-          : `${selected.length} لون — الزبون يختار من بينها فقط.`}
-      </p>
+      {selected.length === 0 ? (
+        <p className="mt-2 text-xs text-muted">
+          بدون تحديد لون، لن يُطلب من الزبون اختيار لون إطلاقًا.
+        </p>
+      ) : (
+        <p className="mt-2 text-xs">
+          <span className="font-bold text-foreground">المختار ({selected.length}):</span>{" "}
+          <span className="text-muted">
+            {COLOR_PALETTE.filter((c) => selected.includes(c.name)).map((c) => c.name).join("، ")}
+          </span>
+        </p>
+      )}
     </div>
   );
 }

@@ -5,51 +5,56 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "./cart";
-import { CartIcon, CubeIcon, MenuIcon, XIcon } from "./Icons";
+import { CartIcon, MenuIcon, XIcon, CubeIcon } from "./Icons";
 import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
 
 const links = [
-  { href: "/", label: "الرئيسية" },
+  { href: "/", label: "الرفّ" },
   { href: "/products", label: "المنتجات" },
   ...(CUSTOM_ORDERS_ENABLED ? [{ href: "/custom", label: "اطلب تصميمك" }] : []),
-  { href: "/track", label: "تتبع طلبك" },
+  { href: "/track", label: "تتبّع طلبك" },
 ];
 
+/** ترويسة بلغة الملصق: شريط علامة أسود حاد، لا رأس شفاف ناعم */
 export default function Header({ logo }: { logo: string | null }) {
   const { count } = useCart();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="flex items-center gap-2 text-primary" onClick={() => setOpen(false)}>
+    <header className="sticky top-0 z-40 border-b-2 border-line bg-surface">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 text-foreground"
+          onClick={() => setOpen(false)}
+        >
           {logo ? (
             <Image
               src={logo}
-              alt="M3DStore"
-              width={40}
-              height={40}
+              alt=""
+              width={36}
+              height={36}
               priority
-              className="h-10 w-10 rounded-xl object-cover"
+              className="h-9 w-9 border border-line object-cover"
             />
           ) : (
-            <CubeIcon width={28} height={28} />
+            <CubeIcon width={26} height={26} className="text-primary" />
           )}
-          <span className="text-xl font-bold tracking-tight">M3DStore</span>
+          <span className="font-display text-lg font-extrabold tracking-[0.06em]">M3DSTORE</span>
         </Link>
 
-        <nav aria-label="التنقل الرئيسي" className="hidden items-center gap-1 md:flex">
+        <nav aria-label="التنقل الرئيسي" className="hidden items-center md:flex">
           {links.map((l) => {
             const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors duration-200 ${
+                className={`border-b-2 px-4 py-4 font-display text-sm font-bold transition-colors duration-200 ${
                   active
-                    ? "bg-primary-soft text-primary"
-                    : "text-foreground hover:bg-primary-soft/60 hover:text-primary"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-foreground hover:border-line"
                 }`}
               >
                 {l.label}
@@ -62,29 +67,25 @@ export default function Header({ logo }: { logo: string | null }) {
           <Link
             href="/cart"
             aria-label={`سلة المشتريات — ${count} منتج`}
-            className="relative flex h-11 w-11 items-center justify-center rounded-full text-foreground transition-colors duration-200 hover:bg-primary-soft hover:text-primary"
+            className="relative flex h-10 items-center gap-2 border-2 border-line px-3 font-mono text-xs font-bold text-foreground transition-colors duration-200 hover:bg-foreground hover:text-white"
           >
-            <CartIcon width={22} height={22} />
-            {count > 0 && (
-              <span className="absolute -top-0.5 -left-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-xs font-bold text-white tabular">
-                {count}
-              </span>
-            )}
+            <CartIcon width={18} height={18} />
+            <span className="tabular">{count}</span>
           </Link>
           <button
             type="button"
             aria-label={open ? "إغلاق القائمة" : "فتح القائمة"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
-            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-foreground transition-colors duration-200 hover:bg-primary-soft hover:text-primary md:hidden"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center border-2 border-line text-foreground transition-colors duration-200 hover:bg-foreground hover:text-white md:hidden"
           >
-            {open ? <MenuIconClose /> : <MenuIcon width={22} height={22} />}
+            {open ? <XIcon width={20} height={20} /> : <MenuIcon width={20} height={20} />}
           </button>
         </div>
       </div>
 
       {open && (
-        <nav aria-label="قائمة الجوال" className="border-t border-line bg-surface px-4 pb-4 pt-2 md:hidden">
+        <nav aria-label="قائمة الجوال" className="border-t-2 border-line bg-surface md:hidden">
           {links.map((l) => {
             const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
             return (
@@ -92,8 +93,8 @@ export default function Header({ logo }: { logo: string | null }) {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className={`block rounded-lg px-4 py-3 text-base font-semibold transition-colors duration-200 ${
-                  active ? "bg-primary-soft text-primary" : "text-foreground hover:bg-primary-soft/60"
+                className={`block border-b border-rule-soft px-4 py-3 font-display text-base font-bold transition-colors duration-200 ${
+                  active ? "bg-primary text-white" : "text-foreground hover:bg-background"
                 }`}
               >
                 {l.label}
@@ -104,8 +105,4 @@ export default function Header({ logo }: { logo: string | null }) {
       )}
     </header>
   );
-}
-
-function MenuIconClose() {
-  return <XIcon width={22} height={22} />;
 }

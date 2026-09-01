@@ -45,3 +45,7 @@ next-env.d.ts
 
 # قاعدة البيانات وملفات الزبائن المرفوعة — بيانات شخصية، لا تُرفع أبدًا
 /data/
+
+# لقطات مراجعة التصميم
+/.impeccable/review/
+/.impeccable/questions/
