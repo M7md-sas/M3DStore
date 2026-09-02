@@ -48,9 +48,9 @@ export const PAYMENT_LIVE = false;
  * املأ الحقول ليظهر الخيار للزبون؛ يبقى مخفيًا ما دام الآيبان فارغًا.
  */
 export const BANK_TRANSFER = {
-  iban: "",              // مثال: SA0000000000000000000000
-  accountName: "",       // الاسم كما هو في الحساب البنكي
-  bankName: "",          // مثال: مصرف الراجحي
+  iban: "SA9880000440608016141028",
+  accountName: "MOHAMMED SAAD",
+  bankName: "مصرف الراجحي",
 };
 
 export const bankTransferReady = () => BANK_TRANSFER.iban.trim().length > 0;
