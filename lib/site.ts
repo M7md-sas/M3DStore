@@ -42,3 +42,15 @@ export const CR_FILE_PUBLIC = false;
  * تُرفع إلى true فقط بعد ربط مفاتيح ميسر الحقيقية في .env.local.
  */
 export const PAYMENT_LIVE = false;
+
+/**
+ * التحويل البنكي — يعمل بلا بوابة دفع وبلا سجل تجاري.
+ * املأ الحقول ليظهر الخيار للزبون؛ يبقى مخفيًا ما دام الآيبان فارغًا.
+ */
+export const BANK_TRANSFER = {
+  iban: "",              // مثال: SA0000000000000000000000
+  accountName: "",       // الاسم كما هو في الحساب البنكي
+  bankName: "",          // مثال: مصرف الراجحي
+};
+
+export const bankTransferReady = () => BANK_TRANSFER.iban.trim().length > 0;

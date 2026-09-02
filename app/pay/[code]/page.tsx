@@ -6,7 +6,8 @@ import PaymentPanel from "@/components/PaymentPanel";
 import { ShieldIcon } from "@/components/Icons";
 import SaveOrderPanel from "@/components/SaveOrderPanel";
 import WhatsAppOrderPanel from "@/components/WhatsAppOrderPanel";
-import { PAYMENT_LIVE } from "@/lib/site";
+import { PAYMENT_LIVE, bankTransferReady } from "@/lib/site";
+import BankTransferPanel from "@/components/BankTransferPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +82,10 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
             PAYMENT_LIVE ? (
               <PaymentPanel code={code} amount={amount!} initialMethod={method || undefined} />
             ) : (
-              <WhatsAppOrderPanel code={code} amount={amount!} items={lines} />
+              <div className="space-y-4">
+                {bankTransferReady() && <BankTransferPanel code={code} amount={amount!} />}
+                <WhatsAppOrderPanel code={code} amount={amount!} items={lines} />
+              </div>
             )
           ) : alreadyPaid ? (
             <div className="rounded-xl bg-success-soft p-5 text-center font-bold text-success">
