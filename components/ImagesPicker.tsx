@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import Image from "next/image";
 
 /**
@@ -10,15 +11,44 @@ export default function ImagesPicker({
   available,
   selected,
   onChange,
+  onUploaded,
 }: {
   available: string[];
   selected: string[];
   onChange: (images: string[]) => void;
+  /** يُستدعى بعد رفع صورة جديدة بنجاح، لإضافتها إلى قائمة الصور المتاحة في الصفحة */
+  onUploaded?: (path: string) => void;
 }) {
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState("");
+
   const toggle = (img: string) =>
     onChange(selected.includes(img) ? selected.filter((i) => i !== img) : [...selected, img]);
 
   const makeMain = (img: string) => onChange([img, ...selected.filter((i) => i !== img)]);
+
+  const upload = async (file: File) => {
+    setUploadErr("");
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body });
+      const data = await res.json();
+      if (!res.ok) {
+        setUploadErr(data.error ?? "تعذّر رفع الصورة");
+        return;
+      }
+      onUploaded?.(data.path);
+      onChange([...selected, data.path]);
+    } catch {
+      setUploadErr("تعذّر رفع الصورة — تحقق من الاتصال");
+    } finally {
+      setUploading(false);
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  };
 
   return (
     <div>
@@ -27,6 +57,28 @@ export default function ImagesPicker({
         {selected.length > 0 && (
           <span className="text-xs text-muted tabular">{selected.length} مختارة</span>
         )}
+      </div>
+
+      <div className="mb-2 flex items-center gap-2">
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) upload(file);
+          }}
+        />
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => fileInput.current?.click()}
+          className="cursor-pointer rounded-full bg-primary-soft px-3.5 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-wait disabled:opacity-60"
+        >
+          {uploading ? "جارٍ الرفع..." : "+ رفع صورة من جهازي"}
+        </button>
+        {uploadErr && <span className="text-xs font-semibold text-danger">{uploadErr}</span>}
       </div>
 
       {selected.length > 0 && (

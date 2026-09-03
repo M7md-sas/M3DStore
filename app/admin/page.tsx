@@ -186,7 +186,14 @@ export default function AdminPage() {
       <div className="py-6">
         {tab === "custom" && <CustomTab items={custom} reload={load} />}
         {tab === "orders" && <OrdersTab items={orders} reload={load} />}
-        {tab === "products" && <ProductsTab items={products} images={images} reload={load} />}
+        {tab === "products" && (
+          <ProductsTab
+            items={products}
+            images={images}
+            onUploaded={(p) => setImages((prev) => [p, ...prev])}
+            reload={load}
+          />
+        )}
         {tab === "instagram" && <InstagramTab items={igPosts} reload={load} />}
       </div>
     </div>
@@ -526,7 +533,17 @@ function safeList(json: string): string[] {
 }
 
 /* ===== تبويب المنتجات ===== */
-function ProductsTab({ items, images, reload }: { items: Product[]; images: string[]; reload: () => void }) {
+function ProductsTab({
+  items,
+  images,
+  onUploaded,
+  reload,
+}: {
+  items: Product[];
+  images: string[];
+  onUploaded: (path: string) => void;
+  reload: () => void;
+}) {
   const empty = { name: "", description: "", price: "", category: "ديكورات وهدايا", image: images[0], stock: "10", leadDays: "3", colors: [] as string[],
     gallery: [images[0]] as string[], colorMode: "single" as "single" | "multi" };
   const [form, setForm] = useState(empty);
@@ -650,9 +667,10 @@ function ProductsTab({ items, images, reload }: { items: Product[]; images: stri
             available={images}
             selected={form.gallery}
             onChange={(gallery) => setForm({ ...form, gallery })}
+            onUploaded={onUploaded}
           />
           <p className="mt-1 text-xs text-muted">
-            الصور المستوردة من إنستقرام تظهر هنا تلقائيًا. لإضافة صور يدويًا: ضعها في مجلد public/products
+            الصور المستوردة من إنستقرام تظهر هنا تلقائيًا، وتقدر ترفع صورة من جهازك مباشرة بالزر أعلاه.
           </p>
         </div>
         <ColorPicker

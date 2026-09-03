@@ -62,7 +62,10 @@ export default function ProductGallery({
           اضغط للتكبير
         </span>
         {count > 1 && (
-          <span className="absolute top-3 left-3 rounded-full bg-foreground/70 px-3 py-1 text-xs font-bold text-white tabular backdrop-blur">
+          <span
+            dir="ltr"
+            className="absolute top-3 left-3 rounded-full bg-foreground/70 px-3 py-1 text-xs font-bold text-white tabular backdrop-blur"
+          >
             {index + 1} / {count}
           </span>
         )}
@@ -130,7 +133,7 @@ export default function ProductGallery({
               >
                 <ArrowLeftIcon width={20} height={20} />
               </button>
-              <span className="text-sm font-bold text-white tabular">
+              <span dir="ltr" className="text-sm font-bold text-white tabular">
                 {index + 1} / {count}
               </span>
               <button
