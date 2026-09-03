@@ -119,8 +119,8 @@ function TrackContent() {
       </form>
 
       {saved.length > 0 && (
-        <section className="mt-6 border-2 border-line bg-surface">
-          <h2 className="border-b-2 border-line px-4 py-2 font-display text-sm font-bold">
+        <section className="mt-6 border border-line bg-surface">
+          <h2 className="border-b border-line px-4 py-2 font-display text-sm font-bold">
             طلباتك على هذا الجهاز
           </h2>
           <ul className="divide-y divide-rule-soft">
@@ -205,7 +205,7 @@ function TrackContent() {
                           ? "bg-primary text-white"
                           : current
                             ? "border-2 border-primary bg-primary-soft text-primary"
-                            : "border-2 border-line bg-surface text-muted"
+                            : "border border-line bg-surface text-muted"
                       }`}
                     >
                       {done ? <CheckIcon width={14} height={14} /> : i + 1}

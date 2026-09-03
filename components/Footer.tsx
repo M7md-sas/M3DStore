@@ -18,11 +18,11 @@ export default function Footer({ logo }: { logo: string | null }) {
   ];
 
   return (
-    <footer className="mt-10 border-t-2 border-line bg-surface">
+    <footer className="mt-14 border-t border-line bg-surface">
       <div className="mx-auto max-w-6xl px-4">
-        <div className="grid gap-0 border-x-2 border-line md:grid-cols-3">
+        <div className="grid gap-8 py-10 md:grid-cols-3">
           {/* العلامة */}
-          <div className="border-b-2 border-line p-5 md:border-b-0 md:border-l-2">
+          <div>
             <div className="flex items-center gap-2.5">
               {logo ? (
                 <Image
@@ -30,7 +30,7 @@ export default function Footer({ logo }: { logo: string | null }) {
                   alt=""
                   width={36}
                   height={36}
-                  className="h-9 w-9 border border-line object-cover"
+                  className="h-9 w-9 rounded-xl object-cover ring-1 ring-line"
                 />
               ) : (
                 <CubeIcon width={26} height={26} className="text-primary" />
@@ -47,7 +47,7 @@ export default function Footer({ logo }: { logo: string | null }) {
                 href={whatsappLink()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex w-fit items-center gap-2 font-mono text-sm font-bold text-[#0C6B39] transition-colors hover:text-[#094B28]"
+                className="inline-flex w-fit items-center gap-2 text-sm font-bold text-[#0C6B39] transition-colors hover:text-[#094B28]"
               >
                 <WhatsAppIcon width={16} height={16} />
                 <span dir="ltr">{WHATSAPP_DISPLAY}</span>
@@ -56,7 +56,7 @@ export default function Footer({ logo }: { logo: string | null }) {
                 href={instagramLink()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex w-fit items-center gap-2 font-mono text-sm font-bold text-[#C13584] transition-colors hover:text-[#94266a]"
+                className="inline-flex w-fit items-center gap-2 text-sm font-bold text-[#C13584] transition-colors hover:text-[#94266a]"
               >
                 <InstagramIcon width={16} height={16} />
                 <span dir="ltr">@{INSTAGRAM_HANDLE}</span>
@@ -65,8 +65,8 @@ export default function Footer({ logo }: { logo: string | null }) {
           </div>
 
           {/* الروابط */}
-          <div className="border-b-2 border-line p-5 md:border-b-0 md:border-l-2">
-            <h3 className="font-mono text-[0.62rem] tracking-[0.12em] text-muted">روابط</h3>
+          <div>
+            <h3 className="text-xs font-bold text-muted">روابط</h3>
             <ul className="mt-3 space-y-2">
               {quickLinks.map((l) => (
                 <li key={l.href}>
@@ -79,7 +79,7 @@ export default function Footer({ logo }: { logo: string | null }) {
                 </li>
               ))}
             </ul>
-            <h3 className="mt-5 font-mono text-[0.62rem] tracking-[0.12em] text-muted">قانوني</h3>
+            <h3 className="mt-5 text-xs font-bold text-muted">قانوني</h3>
             <ul className="mt-3 space-y-2">
               {[
                 { href: "/privacy", label: "سياسة الخصوصية" },
@@ -99,22 +99,22 @@ export default function Footer({ logo }: { logo: string | null }) {
           </div>
 
           {/* الشحن والدفع */}
-          <div className="p-5">
-            <h3 className="font-mono text-[0.62rem] tracking-[0.12em] text-muted">الشحن</h3>
+          <div>
+            <h3 className="text-xs font-bold text-muted">الشحن</h3>
             <p className="mt-2 font-display text-sm font-bold">
               25 ر.س لكل المملكة — مجاني فوق 200 ر.س
             </p>
 
-            <h3 className="mt-5 font-mono text-[0.62rem] tracking-[0.12em] text-muted">الدفع</h3>
+            <h3 className="mt-5 text-xs font-bold text-muted">الدفع</h3>
             <div className="mt-2">
               <PaymentBadges size="sm" />
             </div>
           </div>
         </div>
 
-        {cr && <VerifyBadge cr={cr} />}
+        {cr && <div className="pb-8">{<VerifyBadge cr={cr} />}</div>}
 
-        <p className="border-x-2 border-t-2 border-line px-5 py-3 font-mono text-[0.68rem] text-muted">
+        <p className="border-t border-line py-4 text-xs text-muted">
           © {new Date().getFullYear()} M3DSTORE — الرياض، السعودية
         </p>
       </div>

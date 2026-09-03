@@ -1,15 +1,14 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDb } from "@/lib/db";
-import { sar, whatsappLink } from "@/lib/format";
+import { whatsappLink, leadTimeText } from "@/lib/format";
 import type { ProductRow } from "@/components/ProductCard";
-import ProductCard, { partCode } from "@/components/ProductCard";
+import ProductCard from "@/components/ProductCard";
 import AddToCart from "@/components/AddToCart";
 import { parseColors, parseColorMode } from "@/lib/colors";
 import { productImages } from "@/lib/images";
 import ProductGallery from "@/components/ProductGallery";
-import { ArrowLeftIcon, ShieldIcon, TruckIcon, WhatsAppIcon } from "@/components/Icons";
+import { ArrowLeftIcon, ShieldIcon, TruckIcon, WhatsAppIcon, PrinterIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -31,41 +30,38 @@ export default async function ProductPage({
     .all(product.category, product.id) as ProductRow[];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-6 md:py-10">
       <nav aria-label="مسار التنقل" className="mb-6 flex items-center gap-2 text-sm text-muted">
         <Link href="/products" className="transition-colors hover:text-primary">المنتجات</Link>
         <ArrowLeftIcon width={14} height={14} />
         <span className="font-semibold text-foreground">{product.name}</span>
       </nav>
 
-      <div className="grid gap-10 md:grid-cols-2">
+      <div className="grid gap-8 md:grid-cols-2 md:gap-12">
         <ProductGallery images={productImages(product)} alt={product.name} />
 
-        <div className="border-2 border-line bg-surface">
-          <div className="flex items-center justify-between gap-2 border-b-2 border-line bg-primary px-4 py-2">
-            <span className="font-display text-xs font-bold tracking-[0.16em] text-white">
-              {product.category}
-            </span>
-            <span className="font-mono text-xs font-bold text-white/85" dir="ltr">
-              {partCode(product.id)}
-            </span>
-          </div>
+        <div>
+          <span className="inline-block rounded-full bg-surface-2 px-3.5 py-1.5 text-xs font-bold text-muted">
+            {product.category}
+          </span>
 
-          <div className="p-5">
-          <h1 className="font-display text-2xl font-extrabold leading-tight md:text-3xl">
+          <h1 className="mt-3 text-2xl font-extrabold leading-tight text-foreground md:text-4xl">
             {product.name}
           </h1>
 
-          <div className="mt-4 flex items-end gap-2 border-y-2 border-line py-3">
-            <span className="font-mono text-xs text-muted" dir="ltr">SAR</span>
-            <span className="font-display text-5xl font-extrabold leading-none text-foreground tabular">
+          {/* السعر بذهبي الشعار — المكان الذي يستحقه */}
+          <div className="mt-4 flex items-baseline gap-1.5 text-primary">
+            <span className="text-4xl font-extrabold leading-none tabular md:text-5xl">
               {product.price}
             </span>
+            <span className="text-base font-bold">ر.س</span>
           </div>
 
-          <p className="mt-4 whitespace-pre-line leading-relaxed text-muted">{product.description}</p>
+          <p className="mt-5 whitespace-pre-line leading-relaxed text-muted">
+            {product.description}
+          </p>
 
-          <div className="mt-8">
+          <div className="mt-7">
             <AddToCart
               product={product}
               colors={parseColors(product.colors)}
@@ -73,14 +69,18 @@ export default async function ProductPage({
             />
           </div>
 
-          <div className="mt-6 space-y-3 border-2 border-line bg-background p-4 text-sm">
+          <div className="panel-soft mt-7 space-y-3.5 rounded-2xl border border-line bg-surface p-5 text-sm">
+            <div className="flex items-center gap-3">
+              <PrinterIcon width={20} height={20} className="shrink-0 text-primary" />
+              <span>{leadTimeText(product.lead_days ?? 3)} — تُطبع بعد طلبك بخامة PLA</span>
+            </div>
             <div className="flex items-center gap-3">
               <TruckIcon width={20} height={20} className="shrink-0 text-primary" />
               <span>شحن لجميع مدن المملكة — مجاني للطلبات فوق 200 ر.س</span>
             </div>
             <div className="flex items-center gap-3">
               <ShieldIcon width={20} height={20} className="shrink-0 text-success" />
-              <span>دفع آمن: مدى، Apple Pay، STC Pay، تابي، تمارا</span>
+              <span>الدفع بالتحويل البنكي، وتأكيد الطلب على واتساب</span>
             </div>
             <a
               href={whatsappLink(`استفسار عن المنتج: ${product.name}`)}
@@ -92,14 +92,13 @@ export default async function ProductPage({
               عندك سؤال عن المنتج؟ كلمنا واتساب
             </a>
           </div>
-          </div>
         </div>
       </div>
 
       {related.length > 0 && (
-        <section className="mt-16">
-          <h2 className="mb-6 text-2xl font-extrabold">منتجات مشابهة</h2>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <section className="mt-14">
+          <h2 className="mb-5 text-xl font-extrabold md:text-2xl">قطع تعجبك كمان</h2>
+          <div className="grid grid-cols-2 gap-3.5 md:gap-5 lg:grid-cols-4">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

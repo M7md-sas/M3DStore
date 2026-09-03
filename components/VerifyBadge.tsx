@@ -8,8 +8,8 @@ import type { CommercialRegister } from "@/lib/cr";
  */
 export default function VerifyBadge({ cr }: { cr: NonNullable<CommercialRegister> }) {
   return (
-    <section className="border-x-2 border-t-2 border-line bg-surface">
-      <h2 className="border-b-2 border-line bg-foreground px-4 py-2 font-display text-sm font-bold tracking-wide text-white">
+    <section className="panel-soft overflow-hidden rounded-2xl border border-line bg-surface">
+      <h2 className="border-b border-line px-5 py-3 text-sm font-bold text-foreground">
         توثيق المتجر
       </h2>
 
@@ -19,7 +19,7 @@ export default function VerifyBadge({ cr }: { cr: NonNullable<CommercialRegister
             href={cr.verifyUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group shrink-0 self-start border-2 border-line bg-white p-2 transition-colors duration-200 hover:border-primary"
+            className="group shrink-0 self-start rounded-xl border border-line bg-white p-2 transition-colors duration-200 hover:border-primary"
           >
             <Image
               src={cr.qr}
@@ -28,14 +28,14 @@ export default function VerifyBadge({ cr }: { cr: NonNullable<CommercialRegister
               height={96}
               className="h-24 w-24"
             />
-            <span className="mt-1 block text-center font-mono text-[0.58rem] text-muted transition-colors group-hover:text-primary">
+            <span className="mt-1 block text-center text-[0.68rem] text-muted transition-colors group-hover:text-primary">
               امسح للتحقق
             </span>
           </a>
         )}
 
         <div className="min-w-0 flex-1">
-          <p className="font-mono text-[0.62rem] tracking-[0.12em] text-muted">{cr.label}</p>
+          <p className="text-xs font-bold text-muted">{cr.label}</p>
           <p
             dir="ltr"
             className="mt-1 font-display text-2xl font-extrabold text-foreground tabular sm:text-3xl"
@@ -53,7 +53,7 @@ export default function VerifyBadge({ cr }: { cr: NonNullable<CommercialRegister
               href={cr.verifyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center border-2 border-line px-4 py-2 font-display text-sm font-bold text-foreground transition-colors duration-200 hover:bg-foreground hover:text-white"
+              className="inline-flex items-center rounded-full border border-line px-5 py-2.5 text-sm font-bold text-foreground transition-colors duration-200 hover:bg-surface-2"
             >
               تحقّق من الوثيقة
             </a>
@@ -71,7 +71,7 @@ export default function VerifyBadge({ cr }: { cr: NonNullable<CommercialRegister
 
           {cr.authorityLogo && (
             <div className="mt-4 flex items-center gap-2.5 border-t border-rule-soft pt-3">
-              <span className="font-mono text-[0.58rem] text-muted">صادرة من</span>
+              <span className="text-[0.68rem] text-muted">صادرة من</span>
               <Image
                 src={cr.authorityLogo}
                 alt="وزارة الموارد البشرية والتنمية الاجتماعية"

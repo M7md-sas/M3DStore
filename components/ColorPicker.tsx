@@ -46,15 +46,15 @@ export default function ColorPicker({
               type="button"
               onClick={() => toggle(c.name)}
               aria-pressed={on}
-              className={`flex cursor-pointer items-center gap-1.5 border-2 px-2.5 py-1.5 text-xs font-bold transition-colors duration-200 ${
+              className={`flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-bold transition-colors duration-200 ${
                 on
-                  ? "border-foreground bg-foreground text-white"
+                  ? "border-primary bg-primary text-white"
                   : "border-line/25 bg-surface text-muted hover:border-foreground"
               }`}
             >
               <span
                 aria-hidden
-                className={`flex h-4 w-4 shrink-0 items-center justify-center border ${
+                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
                   on ? "border-white/60" : "border-line/40"
                 }`}
                 style={{ backgroundColor: c.hex }}

@@ -29,13 +29,13 @@ export default function BankTransferPanel({ code, amount }: { code: string; amou
   ].filter((r) => r.value.trim().length > 0);
 
   return (
-    <section className="border-2 border-line bg-surface">
-      <h2 className="border-b-2 border-line bg-foreground px-4 py-2 font-display text-sm font-bold tracking-wide text-white">
+    <section className="panel-soft overflow-hidden rounded-2xl border border-line bg-surface">
+      <h2 className="border-b border-line px-5 py-3 text-sm font-bold text-foreground">
         الدفع بالتحويل البنكي
       </h2>
 
       <div className="p-4">
-        <div className="flex items-baseline justify-between gap-3 border-b-2 border-line pb-3">
+        <div className="flex items-baseline justify-between gap-3 border-b border-line pb-3">
           <span className="text-sm text-muted">المبلغ المطلوب</span>
           <span className="font-display text-2xl font-extrabold tabular">{sar(amount)}</span>
         </div>
@@ -43,7 +43,7 @@ export default function BankTransferPanel({ code, amount }: { code: string; amou
         <dl className="mt-3 divide-y divide-rule-soft">
           {rows.map((r) => (
             <div key={r.key} className="flex items-center justify-between gap-3 py-2.5">
-              <dt className="shrink-0 font-mono text-[0.62rem] tracking-[0.12em] text-muted">
+              <dt className="shrink-0 text-xs font-bold text-muted">
                 {r.label}
               </dt>
               <dd className="flex min-w-0 items-center gap-2">
@@ -57,7 +57,7 @@ export default function BankTransferPanel({ code, amount }: { code: string; amou
                   type="button"
                   onClick={() => copy(r.value, r.key)}
                   aria-label={`نسخ ${r.label}`}
-                  className="shrink-0 cursor-pointer border border-line px-2 py-1 font-mono text-[0.62rem] font-bold transition-colors hover:bg-foreground hover:text-white"
+                  className="shrink-0 cursor-pointer rounded-full border border-line px-3 py-1 text-[0.7rem] font-bold transition-colors hover:bg-surface-2"
                 >
                   {copied === r.key ? <CheckIcon width={12} height={12} /> : "نسخ"}
                 </button>
@@ -66,7 +66,7 @@ export default function BankTransferPanel({ code, amount }: { code: string; amou
           ))}
         </dl>
 
-        <ol className="mt-4 space-y-2 border-t-2 border-line pt-3 text-sm leading-relaxed text-muted">
+        <ol className="mt-4 space-y-2 border-t border-line pt-3 text-sm leading-relaxed text-muted">
           <li>
             <span className="font-bold text-foreground">١.</span> حوّل {sar(amount)} على الآيبان
             أعلاه.

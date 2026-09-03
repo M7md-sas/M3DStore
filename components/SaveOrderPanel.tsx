@@ -26,8 +26,8 @@ export default function SaveOrderPanel({ code }: { code: string }) {
   }/track?code=${code}`;
 
   return (
-    <section className="border-2 border-line bg-surface">
-      <h2 className="border-b-2 border-line bg-foreground px-4 py-2 font-display text-sm font-bold tracking-wide text-white">
+    <section className="panel-soft overflow-hidden rounded-2xl border border-line bg-surface">
+      <h2 className="border-b border-line px-5 py-3 text-sm font-bold text-foreground">
         احفظ رقم طلبك
       </h2>
 
@@ -39,14 +39,14 @@ export default function SaveOrderPanel({ code }: { code: string }) {
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span
             dir="ltr"
-            className="border-2 border-line bg-background px-4 py-2.5 font-mono text-xl font-bold tabular"
+            className="border border-line bg-background px-4 py-2.5 font-mono text-xl font-bold tabular"
           >
             {code}
           </span>
           <button
             type="button"
             onClick={copy}
-            className="inline-flex cursor-pointer items-center gap-2 border-2 border-line bg-surface px-4 py-2.5 font-display text-sm font-bold text-foreground transition-colors duration-200 hover:bg-foreground hover:text-white"
+            className="inline-flex cursor-pointer items-center gap-2 border border-line bg-surface px-4 py-2.5 font-display text-sm font-bold text-foreground transition-colors duration-200 hover:bg-surface-2"
           >
             {copied ? (
               <>
@@ -62,7 +62,7 @@ export default function SaveOrderPanel({ code }: { code: string }) {
           href={whatsappLink(message)}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-2 border-2 border-line bg-[#0C6B39] px-4 py-2.5 font-display text-sm font-bold text-white transition-colors duration-200 hover:bg-[#094B28]"
+          className="mt-3 inline-flex items-center gap-2 border border-line bg-[#0C6B39] px-4 py-2.5 font-display text-sm font-bold text-white transition-colors duration-200 hover:bg-[#094B28]"
         >
           <WhatsAppIcon width={16} height={16} />
           أرسل الرقم لنفسك في واتساب

@@ -138,7 +138,7 @@ export default function CustomOrderPage() {
           ) : (
             <label
               htmlFor="file"
-              className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-line bg-surface px-4 py-8 text-center transition-colors hover:border-primary hover:bg-primary-soft/40"
+              className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-line-strong bg-surface px-4 py-8 text-center transition-colors hover:border-primary hover:bg-primary-soft/40"
             >
               <UploadIcon width={28} height={28} className="text-primary" />
               <span className="font-bold">اضغط لرفع الملف (إجباري)</span>

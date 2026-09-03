@@ -122,14 +122,14 @@ export default function AddToCart({
       )}
 
       {product.stock <= 0 && (
-        <p className="inline-flex w-fit items-center gap-2 border-2 border-line bg-background px-3 py-2 text-sm font-bold">
+        <p className="inline-flex w-fit items-center gap-2 rounded-full bg-primary-soft px-4 py-2 text-sm font-bold text-foreground">
           <ClockIcon width={16} height={16} className="text-primary" />
           تُطبع عند الطلب — {leadTimeText(product.lead_days ?? 3)}
         </p>
       )}
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center rounded-xl border border-line bg-surface">
+        <div className="flex items-center rounded-full border border-line bg-surface">
           <button
             type="button"
             aria-label="زيادة الكمية"
@@ -154,7 +154,7 @@ export default function AddToCart({
         <button
           type="button"
           onClick={addNow}
-          className={`flex h-12 cursor-pointer items-center gap-2 rounded-xl px-6 font-bold text-white transition-colors duration-200 ${
+          className={`flex h-12 cursor-pointer items-center gap-2 rounded-full px-7 font-bold text-white transition-colors duration-200 ${
             added ? "bg-success" : "bg-primary hover:bg-primary-hover"
           }`}
         >
@@ -174,7 +174,7 @@ export default function AddToCart({
           onClick={() => {
             if (addNow()) router.push("/cart");
           }}
-          className="h-12 cursor-pointer rounded-xl border-2 border-primary px-6 font-bold text-primary transition-colors duration-200 hover:bg-primary-soft"
+          className="h-12 cursor-pointer rounded-full border-2 border-primary px-7 font-bold text-primary transition-colors duration-200 hover:bg-primary-soft"
         >
           اشترِ الآن
         </button>

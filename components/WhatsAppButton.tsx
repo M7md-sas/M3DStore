@@ -12,7 +12,7 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="اسأل عبر واتساب"
-      className="fixed bottom-4 left-4 z-50 inline-flex items-center gap-2 border-2 border-line bg-surface p-2.5 font-display text-sm font-bold text-foreground shadow-[3px_3px_0_0_var(--foreground)] transition-transform duration-200 hover:-translate-y-0.5 md:px-3 md:py-2"
+      className="fixed bottom-4 left-4 z-50 inline-flex items-center gap-2 card-soft rounded-full border border-line bg-surface p-3 text-sm font-bold text-foreground transition-transform duration-200 hover:-translate-y-0.5 md:px-4 md:py-3"
     >
       <WhatsAppIcon width={18} height={18} className="text-[#0C6B39]" />
       <span className="hidden md:inline">اسأل واتساب</span>

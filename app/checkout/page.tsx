@@ -161,7 +161,7 @@ export default function CheckoutPage() {
             </div>
           </section>
           ) : (
-            <section className="rounded-2xl border-2 border-line bg-surface p-6">
+            <section className="rounded-2xl border border-line bg-surface p-6">
               <h2 className="text-lg font-extrabold">كيف نكمل الطلب</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted">
                 بعد ما ترسل بياناتك يُحفظ طلبك برقم، ويوصلك زر يفتح واتساب برسالة جاهزة

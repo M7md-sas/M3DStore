@@ -33,8 +33,8 @@ export default function WhatsAppOrderPanel({
   )}\n\nأبغى أأكد الطلب وأعرف طريقة الدفع.`;
 
   return (
-    <div className="border-2 border-line bg-surface">
-      <h2 className="border-b-2 border-line bg-foreground px-4 py-2 font-display text-sm font-bold tracking-wide text-white">
+    <div className="panel-soft overflow-hidden rounded-2xl border border-line bg-surface">
+      <h2 className="border-b border-line px-5 py-3 text-sm font-bold text-foreground">
         تأكيد الطلب
       </h2>
 
@@ -48,7 +48,7 @@ export default function WhatsAppOrderPanel({
           href={whatsappLink(message)}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 flex w-full items-center justify-center gap-2 border-2 border-line bg-[#0C6B39] py-3.5 font-display text-base font-bold text-white transition-colors duration-200 hover:bg-[#094B28]"
+          className="mt-4 flex w-full items-center justify-center gap-2 border border-line bg-[#0C6B39] py-3.5 font-display text-base font-bold text-white transition-colors duration-200 hover:bg-[#094B28]"
         >
           <WhatsAppIcon width={20} height={20} />
           أكّد طلبك على واتساب
