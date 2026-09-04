@@ -79,14 +79,18 @@ export { COOKIE_NAME };
 export const STATE_COOKIE = "m3d_oauth_state";
 
 /**
- * أصل الموقع كما يراه المتصفح. في الإنتاج خلف nginx قد يصل الطلب
- * بمضيف داخلي، فنعتمد SITE_URL؛ وفي التطوير المحلي نأخذ أصل الطلب
- * حتى يعمل localhost بلا ضبط إضافي.
+ * أصل الموقع كما يراه المتصفح — وهو ما يُبنى عليه redirect_uri وروابط
+ * رجوع الدفع، فأي خطأ فيه يكسر الدخول والدفع معًا.
+ *
+ * لا يصح اشتقاقه من الطلب في الإنتاج: خلف nginx يصل التطبيقَ مضيفٌ
+ * داخلي (localhost:3000)، فينتج عنوان لا يعمل. لذلك نعتمد
+ * NEXT_PUBLIC_SITE_URL المضبوط على الخادم، ولا نرجع إلى أصل الطلب
+ * إلا في التطوير المحلي حيث لا يُضبط هذا المتغيّر.
  */
 export function originOf(request: Request): string {
-  const url = new URL(request.url);
-  const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
-  return local ? url.origin : SITE_URL;
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+  return new URL(request.url).origin;
 }
 
 export function redirectUri(request: Request): string {
