@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDb, generateCode } from "@/lib/db";
 import { shippingFor } from "@/lib/shipping";
 import { validateSelection } from "@/lib/colors";
+import { currentUser } from "@/lib/auth";
 
 type ItemInput = { id: number; qty: number; colors?: string[] };
 
@@ -71,9 +72,13 @@ export async function POST(request: Request) {
     const total = subtotal + shipping;
     const code = generateCode("ORD");
 
+    // مسجّل بقوقل؟ نربط الطلب بحسابه ليظهر له على أي جهاز.
+    // ضيف؟ يبقى NULL والشراء يمضي كما هو — الحساب لا يُشترط أبدًا.
+    const buyerId = (await currentUser())?.id ?? null;
+
     const insertOrder = db.prepare(
-      `INSERT INTO orders (code, customer_name, phone, city, address, items_json, subtotal, shipping, total, payment_method, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO orders (code, customer_name, phone, city, address, items_json, subtotal, shipping, total, payment_method, notes, user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     // الشرط داخل الجملة نفسها: طلبان متزامنان على آخر قطعة لا يمكن أن ينجحا معًا
     const takeStock = db.prepare(
@@ -108,7 +113,8 @@ export async function POST(request: Request) {
         shipping,
         total,
         payment_method ?? "",
-        String(notes ?? "").trim().slice(0, 1000)
+        String(notes ?? "").trim().slice(0, 1000),
+        buyerId
       );
     });
 

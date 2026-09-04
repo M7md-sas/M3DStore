@@ -94,6 +94,14 @@ function createDb(): Database.Database {
       product_id INTEGER,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      google_sub TEXT NOT NULL UNIQUE,
+      email TEXT NOT NULL DEFAULT '',
+      name TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 
   migrate(db);
@@ -139,6 +147,10 @@ function migrate(db: Database.Database) {
 
   // مدة تجهيز القطعة بالأيام — القطع تُطبع عند الطلب فليست كلها جاهزة
   addColumn("products", "lead_days", "INTEGER NOT NULL DEFAULT 3");
+
+  // صاحب الطلب إن كان مسجّلًا بقوقل. يبقى NULL للشراء كضيف —
+  // الشراء بلا حساب هو الأصل، والحساب إضافة اختيارية فوقه.
+  addColumn("orders", "user_id", "INTEGER");
 }
 
 function seed(db: Database.Database) {

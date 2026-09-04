@@ -4,8 +4,15 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ORDER_STATUS, CUSTOM_STATUS, sar, whatsappLink } from "@/lib/format";
-import { CheckIcon, PackageIcon, SearchIcon, WhatsAppIcon } from "@/components/Icons";
+import { CheckIcon, PackageIcon, SearchIcon, WhatsAppIcon, GoogleIcon } from "@/components/Icons";
 import { listOrders, forgetOrder, type SavedOrder } from "@/lib/my-orders";
+
+type AccountOrder = { code: string; created_at: string; status: string; total: number };
+type Account = {
+  enabled: boolean;
+  user: { name: string; email: string } | null;
+  orders: AccountOrder[];
+};
 
 type TrackResult =
   | {
@@ -35,13 +42,55 @@ function TrackContent() {
   const searchParams = useSearchParams();
   const [code, setCode] = useState(searchParams.get("code") ?? "");
   const [saved, setSaved] = useState<SavedOrder[]>([]);
+  const [account, setAccount] = useState<Account | null>(null);
   const [result, setResult] = useState<TrackResult | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const justPaid = searchParams.get("paid") === "1";
+  const authError = searchParams.get("auth_error");
 
   useEffect(() => {
     setSaved(listOrders());
+  }, []);
+
+  /**
+   * عند الدخول: نربط الطلبات المحفوظة على هذا الجهاز بالحساب مرة واحدة،
+   * فطلبات ما قبل التسجيل ما تضيع، وتظهر بعدها على أي جهاز.
+   */
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/my-orders");
+        const data: Account = await res.json();
+        if (!alive) return;
+
+        if (data.user) {
+          const codes = listOrders().map((o) => o.code);
+          if (codes.length > 0) {
+            const linked = await fetch("/api/my-orders", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ codes }),
+            })
+              .then((r) => r.json())
+              .catch(() => ({ linked: 0 }));
+
+            if (alive && linked.linked > 0) {
+              const fresh: Account = await fetch("/api/my-orders").then((r) => r.json());
+              if (alive) setAccount(fresh);
+              return;
+            }
+          }
+        }
+        setAccount(data);
+      } catch {
+        /* الحساب إضافة اختيارية — فشلها لا يعطّل التتبع بالرمز */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const lookup = useCallback(async (c: string) => {
@@ -118,7 +167,87 @@ function TrackContent() {
         </button>
       </form>
 
-      {saved.length > 0 && (
+      {authError && (
+        <p role="alert" className="mt-5 rounded-xl bg-danger-soft px-4 py-3 text-sm font-bold text-danger">
+          ما تم الدخول. جرّب مرة ثانية، أو تتبّع طلبك بالرمز مباشرة.
+        </p>
+      )}
+
+      {/* الحساب: اختياري بالكامل، وقيمته الوحيدة أن طلباتك تتبعك بين الأجهزة */}
+      {account?.enabled && !account.user && (
+        <section className="panel-soft mt-6 rounded-2xl border border-line bg-surface p-5">
+          <h2 className="text-base font-bold">طلباتك على كل أجهزتك</h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            الطلبات محفوظة في هذا المتصفح فقط. سجّل دخولك بقوقل وتتبعك طلباتك لو
+            بدّلت جوالك أو مسحت المتصفح. الشراء ما يحتاج حساب — هذا اختياري.
+          </p>
+          <a
+            href="/api/auth/google?next=/track"
+            className="mt-4 inline-flex items-center gap-2.5 rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-surface-2"
+          >
+            <GoogleIcon width={18} height={18} />
+            الدخول بحساب قوقل
+          </a>
+        </section>
+      )}
+
+      {account?.user && (
+        <section className="panel-soft mt-6 rounded-2xl border border-line bg-surface">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-5 py-3">
+            <div className="min-w-0">
+              <h2 className="truncate text-base font-bold">
+                {account.user.name || "حسابك"}
+              </h2>
+              <p className="truncate text-xs text-muted" dir="ltr">{account.user.email}</p>
+            </div>
+            <button
+              type="button"
+              onClick={async () => {
+                await fetch("/api/auth/logout", { method: "POST" });
+                setAccount({ ...account, user: null, orders: [] });
+              }}
+              className="cursor-pointer rounded-full px-3 py-1.5 text-xs font-bold text-muted transition-colors hover:bg-surface-2 hover:text-danger"
+            >
+              خروج
+            </button>
+          </div>
+
+          {account.orders.length === 0 ? (
+            <p className="px-5 py-4 text-sm text-muted">
+              ما فيه طلبات في حسابك بعد. أي طلب تسويه وأنت داخل يظهر هنا تلقائيًا.
+            </p>
+          ) : (
+            <ul className="divide-y divide-rule-soft">
+              {account.orders.map((o) => (
+                <li key={o.code} className="flex items-center justify-between gap-3 px-5 py-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCode(o.code);
+                      lookup(o.code);
+                    }}
+                    className="cursor-pointer text-sm font-bold tabular text-foreground transition-colors hover:text-primary"
+                    dir="ltr"
+                  >
+                    {o.code}
+                  </button>
+                  <span className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-muted">
+                      {ORDER_STATUS[o.status] ?? o.status}
+                    </span>
+                    <span className="text-sm font-bold tabular text-primary">{sar(o.total)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="border-t border-rule-soft px-5 py-2.5 text-xs text-muted">
+            محفوظة في حسابك — تظهر على أي جهاز تدخل فيه بنفس حساب قوقل.
+          </p>
+        </section>
+      )}
+
+      {saved.length > 0 && !account?.user && (
         <section className="mt-6 border border-line bg-surface">
           <h2 className="border-b border-line px-4 py-2 font-display text-sm font-bold">
             طلباتك على هذا الجهاز
