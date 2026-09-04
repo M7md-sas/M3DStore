@@ -148,6 +148,9 @@ function migrate(db: Database.Database) {
   // مدة تجهيز القطعة بالأيام — القطع تُطبع عند الطلب فليست كلها جاهزة
   addColumn("products", "lead_days", "INTEGER NOT NULL DEFAULT 3");
 
+  // مرجع عملية PayTabs — نسأل به البوابة عن حالة الدفع، ويبقى سجلًا للاسترجاع
+  addColumn("orders", "tran_ref", "TEXT NOT NULL DEFAULT ''");
+
   // صاحب الطلب إن كان مسجّلًا بقوقل. يبقى NULL للشراء كضيف —
   // الشراء بلا حساب هو الأصل، والحساب إضافة اختيارية فوقه.
   addColumn("orders", "user_id", "INTEGER");

@@ -8,6 +8,8 @@ import SaveOrderPanel from "@/components/SaveOrderPanel";
 import WhatsAppOrderPanel from "@/components/WhatsAppOrderPanel";
 import { PAYMENT_LIVE, bankTransferReady } from "@/lib/site";
 import BankTransferPanel from "@/components/BankTransferPanel";
+import CardPayPanel from "@/components/CardPayPanel";
+import { paytabsReady } from "@/lib/paytabs";
 
 export const dynamic = "force-dynamic";
 
@@ -83,6 +85,9 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
               <PaymentPanel code={code} amount={amount!} initialMethod={method || undefined} />
             ) : (
               <div className="space-y-4">
+                {paytabsReady() && code.startsWith("ORD-") && (
+                  <CardPayPanel code={code} amount={amount!} />
+                )}
                 {bankTransferReady() && <BankTransferPanel code={code} amount={amount!} />}
                 <WhatsAppOrderPanel code={code} amount={amount!} items={lines} />
               </div>
