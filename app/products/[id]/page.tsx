@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { after } from "next/server";
 import { notFound } from "next/navigation";
+import { recordView } from "@/lib/analytics";
 import { getDb } from "@/lib/db";
 import { whatsappLink, leadTimeText } from "@/lib/format";
 import type { ProductRow } from "@/components/ProductCard";
@@ -24,6 +26,9 @@ export default async function ProductPage({
     .get(Number(id)) as ProductRow | undefined;
 
   if (!product) notFound();
+
+  // after: العدّ يجري بعد وصول الصفحة للزبون فلا يبطئها
+  after(() => recordView(product.id));
 
   const related = db
     .prepare("SELECT * FROM products WHERE active = 1 AND category = ? AND id != ? LIMIT 4")

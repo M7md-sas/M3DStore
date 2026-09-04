@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { isAdmin } from "@/lib/admin-auth";
 import { getImportedProducts } from "@/lib/instagram";
 import { listProductImages } from "@/lib/images";
+import { analyticsSummary } from "@/lib/analytics";
 
 export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
@@ -15,5 +16,12 @@ export async function GET() {
   const instagram = getImportedProducts();
   const images = listProductImages();
 
-  return NextResponse.json({ products, orders, custom, instagram, images });
+  return NextResponse.json({
+    products,
+    orders,
+    custom,
+    instagram,
+    images,
+    analytics: analyticsSummary(),
+  });
 }

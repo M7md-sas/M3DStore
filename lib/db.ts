@@ -95,6 +95,13 @@ function createDb(): Database.Database {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS views (
+      day TEXT NOT NULL,
+      product_id INTEGER NOT NULL DEFAULT 0,
+      count INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (day, product_id)
+    );
+
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       google_sub TEXT NOT NULL UNIQUE,
@@ -147,6 +154,9 @@ function migrate(db: Database.Database) {
 
   // مدة تجهيز القطعة بالأيام — القطع تُطبع عند الطلب فليست كلها جاهزة
   addColumn("products", "lead_days", "INTEGER NOT NULL DEFAULT 3");
+
+  // بريد الزبون — اختياري تمامًا، ويُستخدم لإرسال تأكيد الطلب فقط
+  addColumn("orders", "email", "TEXT NOT NULL DEFAULT ''");
 
   // مرجع عملية PayTabs — نسأل به البوابة عن حالة الدفع، ويبقى سجلًا للاسترجاع
   addColumn("orders", "tran_ref", "TEXT NOT NULL DEFAULT ''");

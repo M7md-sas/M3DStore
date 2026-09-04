@@ -3,6 +3,7 @@ import { getDb, generateCode } from "@/lib/db";
 import { shippingFor } from "@/lib/shipping";
 import { validateSelection } from "@/lib/colors";
 import { currentUser } from "@/lib/auth";
+import { sendOrderConfirmation, sendNewOrderAlert, emailReady, ownerEmail } from "@/lib/email";
 
 type ItemInput = { id: number; qty: number; colors?: string[] };
 
@@ -74,11 +75,16 @@ export async function POST(request: Request) {
 
     // مسجّل بقوقل؟ نربط الطلب بحسابه ليظهر له على أي جهاز.
     // ضيف؟ يبقى NULL والشراء يمضي كما هو — الحساب لا يُشترط أبدًا.
-    const buyerId = (await currentUser())?.id ?? null;
+    const buyer = await currentUser();
+    const buyerId = buyer?.id ?? null;
+
+    // البريد اختياري: نأخذ ما كتبه الزبون، وإلا بريد حسابه إن كان مسجّلًا
+    const typed = String(body.email ?? "").trim().toLowerCase();
+    const buyerEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(typed) ? typed : (buyer?.email ?? "");
 
     const insertOrder = db.prepare(
-      `INSERT INTO orders (code, customer_name, phone, city, address, items_json, subtotal, shipping, total, payment_method, notes, user_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO orders (code, customer_name, phone, city, address, items_json, subtotal, shipping, total, payment_method, notes, user_id, email)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     // الشرط داخل الجملة نفسها: طلبان متزامنان على آخر قطعة لا يمكن أن ينجحا معًا
     const takeStock = db.prepare(
@@ -114,7 +120,8 @@ export async function POST(request: Request) {
         total,
         payment_method ?? "",
         String(notes ?? "").trim().slice(0, 1000),
-        buyerId
+        buyerId,
+        buyerEmail
       );
     });
 
@@ -125,6 +132,21 @@ export async function POST(request: Request) {
       const message = err instanceof Error ? err.message : "";
       if (message.includes("«")) return NextResponse.json({ error: message }, { status: 409 });
       throw err;
+    }
+
+    // الإشعارات لا تُنتظر ولا تُفشل الطلب: الزبون دفع، والطلب نجح.
+    if (emailReady()) {
+      const payload = {
+        code,
+        customer_name: customer_name.trim(),
+        email: buyerEmail,
+        total,
+        phone: phone.trim(),
+        city: city.trim(),
+        items: lineItems,
+      };
+      if (buyerEmail) void sendOrderConfirmation(payload);
+      if (ownerEmail()) void sendNewOrderAlert(payload);
     }
 
     return NextResponse.json({ code });

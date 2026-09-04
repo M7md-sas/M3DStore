@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { after } from "next/server";
 import { getDb } from "@/lib/db";
+import { recordView } from "@/lib/analytics";
 import ProductCard, { type ProductRow } from "@/components/ProductCard";
 import { instagramLink, INSTAGRAM_HANDLE, whatsappLink } from "@/lib/format";
 import { InstagramIcon, WhatsAppIcon, PrinterIcon, TruckIcon } from "@/components/Icons";
@@ -9,6 +11,8 @@ import { COLOR_PALETTE } from "@/lib/colors";
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {
+  after(() => recordView(0));
+
   const db = getDb();
   const products = db
     .prepare("SELECT * FROM products WHERE active = 1 ORDER BY price")

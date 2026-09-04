@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { after } from "next/server";
 import type { Metadata } from "next";
+import { recordView } from "@/lib/analytics";
 import { getDb } from "@/lib/db";
 import ProductCard, { type ProductRow } from "@/components/ProductCard";
 import { SearchIcon } from "@/components/Icons";
@@ -14,6 +16,8 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<{ cat?: string; q?: string }>;
 }) {
+  after(() => recordView(0));
+
   const { cat = "الكل", q = "" } = await searchParams;
   const db = getDb();
 

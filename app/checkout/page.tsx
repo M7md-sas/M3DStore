@@ -21,7 +21,7 @@ export default function CheckoutPage() {
   const shipping = subtotal >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
   const total = subtotal + shipping;
 
-  const [form, setForm] = useState({ name: "", phone: "", city: "الرياض", address: "", payment: "mada", notes: "" });
+  const [form, setForm] = useState({ name: "", phone: "", city: "الرياض", address: "", email: "", payment: "mada", notes: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -55,6 +55,7 @@ export default function CheckoutPage() {
           phone: form.phone.trim(),
           city: form.city,
           address: form.address.trim(),
+          email: form.email.trim(),
           payment_method: form.payment,
           notes: form.notes.trim(),
           items: items.map((i) => ({ id: i.id, qty: i.qty, colors: i.colors })),
@@ -107,6 +108,16 @@ export default function CheckoutPage() {
                 <label htmlFor="address" className="mb-1.5 block text-sm font-bold">العنوان التفصيلي</label>
                 <input id="address" className={inputCls} value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="الحي، الشارع، رقم المبنى" />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="mb-1.5 block text-sm font-bold">
+                  البريد الإلكتروني <span className="font-normal text-muted">(اختياري)</span>
+                </label>
+                <input id="email" type="email" inputMode="email" dir="ltr" className={`${inputCls} text-right`}
+                  value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="you@example.com" />
+                <p className="mt-1 text-xs text-muted">نرسل لك تأكيد الطلب ورمز التتبع عليه — ولا نرسل إعلانات.</p>
               </div>
             </div>
           </section>

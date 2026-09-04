@@ -22,6 +22,13 @@ type Order = {
   total: number; payment_method: string; status: string; created_at: string; notes: string;
   carrier: string; tracking: string;
 };
+type Analytics = {
+  views: { today: number; week: number; month: number };
+  orders: { today: number; week: number; month: number; revenue: number };
+  conversion: number;
+  topProducts: { id: number; name: string; views: number }[];
+  daily: { day: string; views: number; orders: number }[];
+};
 type CustomReq = {
   id: number; code: string; customer_name: string; phone: string; description: string;
   file_name: string; file_path: string; price: number | null; status: string;
@@ -42,7 +49,7 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [tab, setTab] = useState<"custom" | "orders" | "products" | "instagram">(
+  const [tab, setTab] = useState<"custom" | "orders" | "products" | "instagram" | "stats">(
     CUSTOM_ORDERS_ENABLED ? "custom" : "instagram"
   );
 
@@ -51,6 +58,7 @@ export default function AdminPage() {
   const [custom, setCustom] = useState<CustomReq[]>([]);
   const [igPosts, setIgPosts] = useState<ImportedProduct[]>([]);
   const [images, setImages] = useState<string[]>(FALLBACK_IMAGES);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/data");
@@ -64,6 +72,7 @@ export default function AdminPage() {
     setCustom(data.custom);
     setIgPosts(data.instagram ?? []);
     if (Array.isArray(data.images) && data.images.length) setImages(data.images);
+    setAnalytics(data.analytics ?? null);
     setAuthed(true);
   }, []);
 
@@ -166,6 +175,7 @@ export default function AdminPage() {
           ["orders", "الطلبات"],
           ["products", "المنتجات"],
           ["instagram", `إنستقرام${igPending ? ` (${igPending})` : ""}`],
+          ["stats", "التحليلات"],
         ] as const).map(([id, label]) => (
           <button
             key={id}
@@ -195,6 +205,7 @@ export default function AdminPage() {
           />
         )}
         {tab === "instagram" && <InstagramTab items={igPosts} reload={load} />}
+        {tab === "stats" && <StatsTab data={analytics} />}
       </div>
     </div>
   );
@@ -774,6 +785,94 @@ function ProductsTab({
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* ===== تبويب التحليلات ===== */
+function StatsTab({ data }: { data: Analytics | null }) {
+  if (!data) return <p className="py-8 text-center text-muted">جارٍ تحميل التحليلات...</p>;
+
+  const peak = Math.max(1, ...data.daily.map((d) => d.views));
+  const dayLabel = (iso: string) => {
+    const [, m, d] = iso.split("-");
+    return `${Number(d)}/${Number(m)}`;
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <Stat label="زيارات اليوم" value={String(data.views.today)} />
+        <Stat label="زيارات آخر ٧ أيام" value={String(data.views.week)} />
+        <Stat label="طلبات آخر ٣٠ يومًا" value={String(data.orders.month)} />
+        <Stat
+          label="نسبة التحويل (٣٠ يومًا)"
+          value={`${data.conversion.toFixed(1)}%`}
+          highlight={data.conversion > 0}
+        />
+      </div>
+
+      {/* الرسم: الزيارات أعمدة، والطلبات نقاط ذهبية فوقها */}
+      <section className="panel-soft rounded-2xl border border-line bg-surface p-5">
+        <h3 className="text-base font-bold">آخر ١٤ يومًا</h3>
+        <p className="mt-1 text-xs text-muted">
+          العمود = زيارات، والنقطة الذهبية = طلبات ذلك اليوم
+        </p>
+
+        <div className="mt-5 flex h-40 items-end gap-1.5 overflow-x-auto">
+          {data.daily.map((d) => (
+            <div key={d.day} className="flex min-w-[26px] flex-1 flex-col items-center gap-1.5">
+              <div className="relative flex h-32 w-full items-end justify-center">
+                <div
+                  title={`${d.views} زيارة`}
+                  className="w-full rounded-t-md bg-primary-soft transition-colors hover:bg-primary/30"
+                  style={{ height: `${Math.max(3, (d.views / peak) * 100)}%` }}
+                />
+                {d.orders > 0 && (
+                  <span
+                    title={`${d.orders} طلب`}
+                    className="absolute -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[0.6rem] font-bold text-white tabular"
+                  >
+                    {d.orders}
+                  </span>
+                )}
+              </div>
+              <span className="text-[0.6rem] text-muted tabular">{dayLabel(d.day)}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel-soft rounded-2xl border border-line bg-surface p-5">
+        <h3 className="text-base font-bold">الأكثر مشاهدة (٣٠ يومًا)</h3>
+        {data.topProducts.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">
+            ما فيه مشاهدات مسجّلة بعد. الأرقام تبدأ من أول زيارة بعد هذا التحديث.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-2.5">
+            {data.topProducts.map((p) => (
+              <li key={p.id} className="flex items-center gap-3">
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold">{p.name}</span>
+                <span className="h-2 w-24 overflow-hidden rounded-full bg-surface-2 sm:w-40">
+                  <span
+                    className="block h-full rounded-full bg-primary"
+                    style={{ width: `${(p.views / data.topProducts[0].views) * 100}%` }}
+                  />
+                </span>
+                <span className="w-10 text-left text-sm font-bold tabular text-muted">
+                  {p.views}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <p className="text-xs leading-relaxed text-muted">
+        الأرقام تُحسب داخل متجرك ولا تُرسل لأي طرف خارجي، ولا تُخزَّن أي بيانات
+        شخصية عن الزوار — عدد فقط لكل يوم ولكل منتج.
+      </p>
     </div>
   );
 }

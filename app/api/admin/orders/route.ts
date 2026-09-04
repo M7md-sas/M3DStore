@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { isAdmin } from "@/lib/admin-auth";
+import { sendShippedNotice, emailReady } from "@/lib/email";
 
 const ALLOWED = ["pending_payment", "paid", "processing", "shipped", "delivered", "cancelled"];
 
@@ -56,6 +57,17 @@ export async function PATCH(request: Request) {
       db.prepare("UPDATE orders SET stock_restored = 1 WHERE id = ?").run(id);
     }
   })();
+
+  // إشعار الشحن يُرسل مرة واحدة عند الانتقال إلى «تم الشحن»، وبعد نجاح
+  // التحديث. فشله لا يُرجع خطأ — الحالة تغيّرت فعلًا.
+  if (body.status === "shipped" && emailReady()) {
+    const row = db
+      .prepare("SELECT code, email, customer_name, carrier, tracking FROM orders WHERE id = ?")
+      .get(id) as
+      | { code: string; email: string; customer_name: string; carrier: string; tracking: string }
+      | undefined;
+    if (row?.email) void sendShippedNotice(row);
+  }
 
   return NextResponse.json({ ok: true });
 }
