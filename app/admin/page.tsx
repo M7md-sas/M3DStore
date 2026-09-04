@@ -822,7 +822,9 @@ function StatsTab({ data }: { data: Analytics | null }) {
         <div className="mt-5 flex h-40 items-end gap-1.5 overflow-x-auto">
           {data.daily.map((d) => (
             <div key={d.day} className="flex min-w-[26px] flex-1 flex-col items-center gap-1.5">
-              <div className="relative flex h-32 w-full items-end justify-center">
+              {/* مسار باهت خلف كل يوم: بلا زيارات يبقى الرسم مقروءًا كرسم
+                  بدل شرائح شبه خفية — وهذه حال الأسبوعين الأولين */}
+              <div className="relative flex h-32 w-full items-end justify-center rounded-md bg-surface-2/70">
                 <div
                   title={`${d.views} زيارة`}
                   className="w-full rounded-t-md bg-primary-soft transition-colors hover:bg-primary/30"
