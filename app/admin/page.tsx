@@ -894,6 +894,96 @@ function StatsTab({ data }: { data: Analytics | null }) {
         الأرقام تُحسب داخل متجرك ولا تُرسل لأي طرف خارجي، ولا تُخزَّن أي بيانات
         شخصية عن الزوار — عدد فقط لكل يوم ولكل منتج.
       </p>
+
+      <BackupPanel />
     </div>
+  );
+}
+
+/* ===== النسخ الاحتياطي ===== */
+type Backup = { name: string; size: number; at: string };
+
+function BackupPanel() {
+  const [items, setItems] = useState<Backup[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const d = await fetch("/api/admin/backup").then((r) => r.json());
+      setItems(d.backups ?? []);
+    } catch {
+      setItems([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const create = async () => {
+    setBusy(true);
+    setErr("");
+    try {
+      const d = await fetch("/api/admin/backup", { method: "POST" }).then((r) => r.json());
+      if (d.error) setErr(d.error);
+      else setItems(d.backups ?? []);
+    } catch {
+      setErr("تعذّر إنشاء النسخة");
+    }
+    setBusy(false);
+  };
+
+  const kb = (n: number) => `${Math.round(n / 1024)} ك.ب`;
+  const when = (iso: string) => iso.replace("T", " ").slice(0, 16);
+
+  return (
+    <section className="panel-soft rounded-2xl border border-line bg-surface p-5">
+      <h3 className="text-base font-bold">النسخ الاحتياطي</h3>
+      <p className="mt-1 text-sm leading-relaxed text-muted">
+        طلباتك ومنتجاتك محفوظة في ملف واحد على الخادم. تُؤخذ نسخة تلقائيًا كل
+        يوم، لكن <strong className="text-foreground">النسخة على الخادم لا تنجو
+        من عطل الخادم نفسه</strong> — نزّل نسخة على جهازك بين حين وآخر، فهذي
+        الحماية الحقيقية.
+      </p>
+
+      <button
+        type="button"
+        onClick={create}
+        disabled={busy}
+        className="mt-4 cursor-pointer rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-hover disabled:cursor-wait disabled:opacity-60"
+      >
+        {busy ? "جارٍ الإنشاء..." : "خذ نسخة الآن"}
+      </button>
+
+      {err && <p className="mt-2 text-sm font-bold text-danger">{err}</p>}
+
+      {items === null ? (
+        <p className="mt-4 text-sm text-muted">جارٍ التحميل...</p>
+      ) : items.length === 0 ? (
+        <p className="mt-4 text-sm text-muted">ما فيه نسخ بعد — اضغط الزر أعلاه.</p>
+      ) : (
+        <ul className="mt-4 divide-y divide-rule-soft">
+          {items.slice(0, 8).map((b) => (
+            <li key={b.name} className="flex items-center justify-between gap-3 py-2.5">
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold tabular" dir="ltr">
+                  {b.name}
+                </span>
+                <span className="text-xs text-muted tabular" dir="ltr">
+                  {when(b.at)} — {kb(b.size)}
+                </span>
+              </span>
+              <a
+                href={`/api/admin/backup/${b.name}`}
+                className="shrink-0 rounded-full bg-primary-soft px-4 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-white"
+              >
+                نزّل
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

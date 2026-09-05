@@ -228,4 +228,4 @@ export function generateCode(prefix: "ORD" | "CST"): string {
   return `${prefix}-${n}`;
 }
 
-export { uploadsDir };
+export { uploadsDir, dataDir };
