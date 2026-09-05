@@ -159,3 +159,35 @@ export async function sendShippedNotice(input: {
     )
   );
 }
+
+/** تنبيه صاحب المتجر أن قطعًا قارب مخزونها الجاهز على النفاد */
+export async function sendLowStockAlert(
+  items: { name: string; stock: number }[]
+): Promise<boolean> {
+  if (items.length === 0) return false;
+  const rows = items
+    .map(
+      (i) =>
+        `<tr><td style="padding:6px 0;border-bottom:1px solid #f3f0e9">${i.name}</td>
+         <td style="padding:6px 0;border-bottom:1px solid #f3f0e9;text-align:left;font-weight:700">${i.stock}</td></tr>`
+    )
+    .join("");
+
+  return send(
+    ownerEmail(),
+    `المخزون الجاهز قارب على النفاد (${items.length} قطعة)`,
+    layout(
+      "قطع تحتاج طباعة",
+      `<p style="margin:0;color:#6d675c;font-size:14px;line-height:1.7">
+         الكمية الجاهزة من هذه القطع صارت قليلة. البيع لا يتوقف — تُطبع عند
+         الطلب — لكن الطلب القادم سيحتاج طباعة يدوية منك.
+       </p>
+       <table style="width:100%;border-collapse:collapse;font-size:14px;margin:12px 0">
+         <tr><td style="padding-bottom:6px;font-size:12px;color:#6d675c">القطعة</td>
+             <td style="padding-bottom:6px;font-size:12px;color:#6d675c;text-align:left">المتبقي</td></tr>
+         ${rows}
+       </table>
+       ${button(`${SITE_URL}/admin`, "افتح لوحة التحكم")}`
+    )
+  );
+}

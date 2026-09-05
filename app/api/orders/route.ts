@@ -3,7 +3,8 @@ import { getDb, generateCode } from "@/lib/db";
 import { shippingFor } from "@/lib/shipping";
 import { validateSelection } from "@/lib/colors";
 import { currentUser } from "@/lib/auth";
-import { sendOrderConfirmation, sendNewOrderAlert, emailReady, ownerEmail } from "@/lib/email";
+import { sendOrderConfirmation, sendNewOrderAlert, sendLowStockAlert, emailReady, ownerEmail } from "@/lib/email";
+import { lowStockAfter } from "@/lib/orders";
 
 type ItemInput = { id: number; qty: number; colors?: string[] };
 
@@ -146,7 +147,12 @@ export async function POST(request: Request) {
         items: lineItems,
       };
       if (buyerEmail) void sendOrderConfirmation(payload);
-      if (ownerEmail()) void sendNewOrderAlert(payload);
+      if (ownerEmail()) {
+        void sendNewOrderAlert(payload);
+        // بعد الخصم: أي قطعة قارب جاهزها على النفاد تستحق تنبيهًا الآن
+        const low = lowStockAfter(db, lineItems);
+        if (low.length > 0) void sendLowStockAlert(low);
+      }
     }
 
     return NextResponse.json({ code });

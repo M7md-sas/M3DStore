@@ -46,6 +46,7 @@ function TrackContent() {
   const [result, setResult] = useState<TrackResult | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const justPaid = searchParams.get("paid") === "1";
   const authError = searchParams.get("auth_error");
 
@@ -407,6 +408,34 @@ function TrackContent() {
             <p className="mt-6 rounded-2xl bg-accent-soft p-4 text-sm font-semibold leading-relaxed text-accent">
               طلبك قيد المراجعة حاليًا — راح نرد عليك خلال 24-48 ساعة. ما يُطلب منك أي دفع قبل الموافقة.
             </p>
+          )}
+
+          {/* الإلغاء متاح ما دام الطلب لم يُدفع — بعدها يصير قرار المتجر */}
+          {result.type === "order" && result.status === "pending_payment" && (
+            <button
+              type="button"
+              disabled={cancelling}
+              onClick={async () => {
+                if (!confirm(`إلغاء الطلب ${result.code}؟ لا يمكن التراجع.`)) return;
+                setCancelling(true);
+                try {
+                  const res = await fetch("/api/orders/cancel", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code: result.code }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) setError(data.error ?? "تعذّر الإلغاء");
+                  else lookup(result.code);
+                } catch {
+                  setError("تعذّر الإلغاء — تحقق من الاتصال");
+                }
+                setCancelling(false);
+              }}
+              className="mt-5 w-full cursor-pointer rounded-xl border border-line py-3 text-sm font-bold text-muted transition-colors hover:border-danger hover:text-danger disabled:cursor-wait disabled:opacity-60"
+            >
+              {cancelling ? "جارٍ الإلغاء..." : "إلغاء الطلب"}
+            </button>
           )}
 
           {result.type === "order" && (
