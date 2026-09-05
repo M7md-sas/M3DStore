@@ -82,6 +82,9 @@ export default function Footer({ logo }: { logo: string | null }) {
             <h3 className="mt-5 text-xs font-bold text-muted">قانوني</h3>
             <ul className="mt-3 space-y-2">
               {[
+                { href: "/about", label: "من نحن" },
+                { href: "/faq", label: "الأسئلة الشائعة" },
+                { href: "/contact", label: "تواصل معنا" },
                 { href: "/privacy", label: "سياسة الخصوصية" },
                 { href: "/terms", label: "الشروط والأحكام" },
                 { href: "/returns", label: "الإرجاع والاستبدال" },
