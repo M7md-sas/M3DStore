@@ -114,6 +114,17 @@ function createDb(): Database.Database {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      order_code TEXT NOT NULL DEFAULT '',
+      name TEXT NOT NULL DEFAULT '',
+      rating INTEGER NOT NULL,
+      body TEXT NOT NULL DEFAULT '',
+      approved INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       google_sub TEXT NOT NULL UNIQUE,

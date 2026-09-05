@@ -10,6 +10,7 @@ import AddToCart from "@/components/AddToCart";
 import { parseColors, parseColorMode } from "@/lib/colors";
 import { productImages } from "@/lib/images";
 import ProductGallery from "@/components/ProductGallery";
+import ProductReviews from "@/components/ProductReviews";
 import { ArrowLeftIcon, ShieldIcon, TruckIcon, WhatsAppIcon, PrinterIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
@@ -99,6 +100,8 @@ export default async function ProductPage({
           </div>
         </div>
       </div>
+
+      <ProductReviews productId={product.id} />
 
       {related.length > 0 && (
         <section className="mt-14">
