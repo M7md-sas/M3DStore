@@ -451,6 +451,14 @@ function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
                   <WhatsAppIcon width={14} height={14} />
                   كلّم الزبون
                 </a>
+                <a
+                  href={`/invoice/${o.code}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 mr-2 inline-flex items-center rounded-full border border-line px-3.5 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-surface-2"
+                >
+                  الفاتورة
+                </a>
                 <p className="mt-0.5 text-xs text-muted">{o.city} — {o.address}</p>
                 <p className="mt-0.5 text-xs text-muted">
                   {o.created_at}{o.payment_method ? ` — ${paymentLabel(o.payment_method)}` : ""}

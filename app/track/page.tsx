@@ -409,6 +409,15 @@ function TrackContent() {
             </p>
           )}
 
+          {result.type === "order" && (
+            <Link
+              href={`/invoice/${result.code}`}
+              className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-line py-3 text-sm font-bold text-foreground transition-colors hover:bg-surface-2"
+            >
+              عرض الفاتورة
+            </Link>
+          )}
+
           <a
             href={whatsappLink(`استفسار عن الطلب ${result.code}`)}
             target="_blank"

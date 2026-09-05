@@ -188,3 +188,15 @@ body {
   outline-offset: 3px;
   border-radius: 4px;
 }
+
+/* الطباعة: الفاتورة وحدها على الورقة — بلا ترويسة الموقع ولا تذييله
+   ولا زر واتساب العائم، وبألوان تُطبع كما تُرى */
+@media print {
+  @page { size: A4; margin: 14mm; }
+  header, footer, .no-print { display: none !important; }
+  body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
