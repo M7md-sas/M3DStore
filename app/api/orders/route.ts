@@ -5,6 +5,7 @@ import { validateSelection } from "@/lib/colors";
 import { currentUser } from "@/lib/auth";
 import { sendOrderConfirmation, sendNewOrderAlert, sendLowStockAlert, emailReady, ownerEmail } from "@/lib/email";
 import { lowStockAfter } from "@/lib/orders";
+import { checkCoupon, markCouponUsed } from "@/lib/coupons";
 
 type ItemInput = { id: number; qty: number; colors?: string[] };
 
@@ -71,7 +72,15 @@ export async function POST(request: Request) {
 
     const subtotal = lineItems.reduce((s, i) => s + i.price * i.qty, 0);
     const shipping = shippingFor(subtotal);
-    const total = subtotal + shipping;
+
+    // الخصم يُحسب هنا من جديد ولا يُقرأ مما أرسله المتصفح إطلاقًا،
+    // وكوبون غير صالح لا يُفشل الطلب — يمضي بلا خصم
+    const couponInput = body.coupon;
+    const coupon = couponInput ? checkCoupon(couponInput, subtotal) : null;
+    const discount = coupon?.ok ? coupon.discount : 0;
+    const couponCode = coupon?.ok ? coupon.code : "";
+
+    const total = subtotal + shipping - discount;
     const code = generateCode("ORD");
 
     // مسجّل بقوقل؟ نربط الطلب بحسابه ليظهر له على أي جهاز.
@@ -84,8 +93,8 @@ export async function POST(request: Request) {
     const buyerEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(typed) ? typed : (buyer?.email ?? "");
 
     const insertOrder = db.prepare(
-      `INSERT INTO orders (code, customer_name, phone, city, address, items_json, subtotal, shipping, total, payment_method, notes, user_id, email)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO orders (code, customer_name, phone, city, address, items_json, subtotal, shipping, total, payment_method, notes, user_id, email, coupon_code, discount)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     // الشرط داخل الجملة نفسها: طلبان متزامنان على آخر قطعة لا يمكن أن ينجحا معًا
     const takeStock = db.prepare(
@@ -122,8 +131,13 @@ export async function POST(request: Request) {
         payment_method ?? "",
         String(notes ?? "").trim().slice(0, 1000),
         buyerId,
-        buyerEmail
+        buyerEmail,
+        couponCode,
+        discount
       );
+
+      // العدّاد داخل المعاملة: طلبان متزامنان على آخر استخدام لا يتجاوزانه
+      if (couponCode) markCouponUsed(couponCode);
     });
 
     try {

@@ -8,6 +8,7 @@ import InstagramTab, { type ImportedProduct } from "@/components/InstagramTab";
 import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
 import ColorPicker from "@/components/ColorPicker";
 import ImagesPicker from "@/components/ImagesPicker";
+import CouponsTab from "@/components/CouponsTab";
 import { parseColors, parseColorMode } from "@/lib/colors";
 
 /* ===== الأنواع ===== */
@@ -51,7 +52,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState("");
   // تفتح على «الطلبات»: هذا ما يفتح صاحب المتجر لوحته من أجله.
   // كانت تفتح على إنستقرام، فيدخل ولا يرى طلبًا ينتظره.
-  const [tab, setTab] = useState<"custom" | "orders" | "products" | "instagram" | "stats">(
+  const [tab, setTab] = useState<"custom" | "orders" | "products" | "instagram" | "stats" | "coupons">(
     "orders"
   );
 
@@ -177,6 +178,7 @@ export default function AdminPage() {
           ["orders", "الطلبات"],
           ["products", "المنتجات"],
           ["instagram", `إنستقرام${igPending ? ` (${igPending})` : ""}`],
+          ["coupons", "الكوبونات"],
           ["stats", "التحليلات"],
         ] as const).map(([id, label]) => (
           <button
@@ -207,6 +209,7 @@ export default function AdminPage() {
           />
         )}
         {tab === "instagram" && <InstagramTab items={igPosts} reload={load} />}
+        {tab === "coupons" && <CouponsTab />}
         {tab === "stats" && <StatsTab data={analytics} />}
       </div>
     </div>

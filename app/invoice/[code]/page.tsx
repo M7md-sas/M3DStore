@@ -21,6 +21,8 @@ type Row = {
   payment_method: string;
   status: string;
   created_at: string;
+  coupon_code: string;
+  discount: number;
 };
 
 type Line = { name: string; qty: number; price: number; colors?: string[] };
@@ -153,6 +155,14 @@ export default async function InvoicePage({
                   {order.shipping === 0 ? "مجاني" : sar(order.shipping)}
                 </dd>
               </div>
+              {order.discount > 0 && (
+                <div className="flex justify-between">
+                  <dt className="text-muted">
+                    خصم{order.coupon_code ? ` (${order.coupon_code})` : ""}
+                  </dt>
+                  <dd className="tabular">−{sar(order.discount)}</dd>
+                </div>
+              )}
               <div className="flex justify-between border-t border-line pt-2 text-base font-extrabold">
                 <dt>الإجمالي</dt>
                 <dd className="text-primary tabular">{sar(order.total)}</dd>

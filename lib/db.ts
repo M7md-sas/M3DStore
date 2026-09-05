@@ -102,6 +102,18 @@ function createDb(): Database.Database {
       PRIMARY KEY (day, product_id)
     );
 
+    CREATE TABLE IF NOT EXISTS coupons (
+      code TEXT PRIMARY KEY,
+      kind TEXT NOT NULL DEFAULT 'percent',
+      value REAL NOT NULL,
+      min_total REAL NOT NULL DEFAULT 0,
+      max_uses INTEGER NOT NULL DEFAULT 0,
+      used INTEGER NOT NULL DEFAULT 0,
+      expires_at TEXT NOT NULL DEFAULT '',
+      active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       google_sub TEXT NOT NULL UNIQUE,
@@ -160,6 +172,11 @@ function migrate(db: Database.Database) {
 
   // مرجع عملية PayTabs — نسأل به البوابة عن حالة الدفع، ويبقى سجلًا للاسترجاع
   addColumn("orders", "tran_ref", "TEXT NOT NULL DEFAULT ''");
+
+  // الكوبون المستخدم وقيمة خصمه — نحفظ المبلغ لا النسبة، فتبقى الفاتورة
+  // صحيحة حتى لو تغيّر الكوبون أو حُذف لاحقًا
+  addColumn("orders", "coupon_code", "TEXT NOT NULL DEFAULT ''");
+  addColumn("orders", "discount", "REAL NOT NULL DEFAULT 0");
 
   // صاحب الطلب إن كان مسجّلًا بقوقل. يبقى NULL للشراء كضيف —
   // الشراء بلا حساب هو الأصل، والحساب إضافة اختيارية فوقه.

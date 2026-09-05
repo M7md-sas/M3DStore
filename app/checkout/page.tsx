@@ -19,7 +19,38 @@ export default function CheckoutPage() {
   const { items, subtotal, clear } = useCart();
   const router = useRouter();
   const shipping = subtotal >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
-  const total = subtotal + shipping;
+
+  // الخصم المعروض هنا للطمأنة فقط — الخادم يعيد حسابه عند إنشاء الطلب
+  const [coupon, setCoupon] = useState("");
+  const [applied, setApplied] = useState<{ code: string; discount: number; label: string } | null>(null);
+  const [couponMsg, setCouponMsg] = useState("");
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
+
+  const discount = applied?.discount ?? 0;
+  const total = subtotal + shipping - discount;
+
+  const applyCoupon = async () => {
+    setCheckingCoupon(true);
+    setCouponMsg("");
+    try {
+      const res = await fetch("/api/coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: coupon, subtotal }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setApplied({ code: data.code, discount: data.discount, label: data.label });
+        setCouponMsg("");
+      } else {
+        setApplied(null);
+        setCouponMsg(data.error ?? "رمز غير صالح");
+      }
+    } catch {
+      setCouponMsg("تعذّر التحقق — تحقق من الاتصال");
+    }
+    setCheckingCoupon(false);
+  };
 
   const [form, setForm] = useState({ name: "", phone: "", city: "الرياض", address: "", email: "", payment: "mada", notes: "" });
   const [error, setError] = useState("");
@@ -56,6 +87,7 @@ export default function CheckoutPage() {
           city: form.city,
           address: form.address.trim(),
           email: form.email.trim(),
+          coupon: applied?.code ?? "",
           payment_method: form.payment,
           notes: form.notes.trim(),
           items: items.map((i) => ({ id: i.id, qty: i.qty, colors: i.colors })),
@@ -208,11 +240,60 @@ export default function CheckoutPage() {
                 {shipping === 0 ? "مجاني" : sar(shipping)}
               </dd>
             </div>
+            {applied && (
+              <div className="flex justify-between">
+                <dt className="text-success">
+                  {applied.label}{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setApplied(null);
+                      setCoupon("");
+                    }}
+                    className="cursor-pointer text-xs text-muted underline hover:text-danger"
+                  >
+                    إزالة
+                  </button>
+                </dt>
+                <dd className="font-bold text-success tabular">−{sar(applied.discount)}</dd>
+              </div>
+            )}
             <div className="flex justify-between text-base">
               <dt className="font-extrabold">الإجمالي</dt>
               <dd className="font-extrabold text-primary tabular">{sar(total)}</dd>
             </div>
           </dl>
+
+          {/* الكوبون: حقل هادئ لا يصرخ — من عنده رمز يعرف مكانه،
+              ومن ما عنده لا نُشعره أنه يفوّت شيئًا */}
+          {!applied && (
+            <div className="mt-4">
+              <label htmlFor="coupon" className="mb-1.5 block text-xs font-bold text-muted">
+                عندك كوبون خصم؟
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="coupon"
+                  value={coupon}
+                  onChange={(e) => setCoupon(e.target.value)}
+                  dir="ltr"
+                  placeholder="CODE"
+                  className="w-full rounded-xl border border-line bg-surface px-3 py-2 text-right text-sm outline-none transition-colors focus:border-primary"
+                />
+                <button
+                  type="button"
+                  onClick={applyCoupon}
+                  disabled={checkingCoupon || !coupon.trim()}
+                  className="shrink-0 cursor-pointer rounded-xl border border-line px-4 text-sm font-bold transition-colors hover:bg-surface-2 disabled:opacity-50"
+                >
+                  {checkingCoupon ? "..." : "تطبيق"}
+                </button>
+              </div>
+              {couponMsg && (
+                <p className="mt-1.5 text-xs font-bold text-danger">{couponMsg}</p>
+              )}
+            </div>
+          )}
 
           {error && (
             <p role="alert" className="mt-4 rounded-lg bg-danger-soft px-3 py-2.5 text-sm font-bold text-danger">
