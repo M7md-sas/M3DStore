@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { ORDER_STATUS, CUSTOM_STATUS, sar, paymentLabel } from "@/lib/format";
-import { CheckIcon, CubeIcon, XIcon, TrashIcon } from "@/components/Icons";
+import { ORDER_STATUS, CUSTOM_STATUS, sar, paymentLabel, customerWhatsAppLink } from "@/lib/format";
+import { CheckIcon, CubeIcon, XIcon, TrashIcon, WhatsAppIcon } from "@/components/Icons";
 import InstagramTab, { type ImportedProduct } from "@/components/InstagramTab";
 import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
 import ColorPicker from "@/components/ColorPicker";
@@ -49,8 +49,10 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  // تفتح على «الطلبات»: هذا ما يفتح صاحب المتجر لوحته من أجله.
+  // كانت تفتح على إنستقرام، فيدخل ولا يرى طلبًا ينتظره.
   const [tab, setTab] = useState<"custom" | "orders" | "products" | "instagram" | "stats">(
-    CUSTOM_ORDERS_ENABLED ? "custom" : "instagram"
+    "orders"
   );
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -430,8 +432,25 @@ function OrdersTab({ items, reload }: { items: Order[]; reload: () => void }) {
               <div>
                 <p className="font-extrabold tabular" dir="ltr">{o.code}</p>
                 <p className="mt-0.5 text-sm">
-                  {o.customer_name} — <span dir="ltr" className="tabular">{o.phone}</span>
+                  {o.customer_name} —{" "}
+                  <a href={`tel:${o.phone}`} dir="ltr" className="tabular underline decoration-line underline-offset-2 hover:text-primary">
+                    {o.phone}
+                  </a>
                 </p>
+                {/* الرد يتم على واتساب، فالزر يفتح المحادثة برسالة جاهزة
+                    بدل نسخ الرقم وتحويله يدويًا في كل مرة */}
+                <a
+                  href={customerWhatsAppLink(
+                    o.phone,
+                    `مرحبًا ${o.customer_name}، بخصوص طلبك ${o.code} من M3DStore`
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#0C6B39] px-3.5 py-1.5 text-xs font-bold text-white transition-opacity hover:opacity-90"
+                >
+                  <WhatsAppIcon width={14} height={14} />
+                  كلّم الزبون
+                </a>
                 <p className="mt-0.5 text-xs text-muted">{o.city} — {o.address}</p>
                 <p className="mt-0.5 text-xs text-muted">
                   {o.created_at}{o.payment_method ? ` — ${paymentLabel(o.payment_method)}` : ""}

@@ -80,3 +80,19 @@ export function leadTimeText(days: number): string {
   if (d <= 10) return `يجهز خلال ${d} أيام`;
   return `يجهز خلال ${d} يومًا`;
 }
+
+/**
+ * رابط محادثة زبون على واتساب من رقمه السعودي.
+ * أرقام الزبائن تُحفظ بصيغة 05xxxxxxxx، وواتساب يطلب الصيغة الدولية
+ * بلا صفر ولا رمز +، فنحوّلها هنا بدل أن ينسخ صاحب المتجر الرقم يدويًا.
+ */
+export function customerWhatsAppLink(phone: string, message?: string): string {
+  const digits = String(phone ?? "").replace(/\D/g, "");
+  const intl = digits.startsWith("966")
+    ? digits
+    : digits.startsWith("0")
+      ? `966${digits.slice(1)}`
+      : `966${digits}`;
+  const base = `https://wa.me/${intl}`;
+  return message ? `${base}?text=${encodeURIComponent(message)}` : base;
+}
