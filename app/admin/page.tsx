@@ -915,7 +915,7 @@ function StatsTab({ data }: { data: Analytics | null }) {
 }
 
 /* ===== النسخ الاحتياطي ===== */
-type Backup = { name: string; size: number; at: string };
+type Backup = { name: string; size: number; at: string; healthy?: boolean };
 
 function BackupPanel() {
   const [items, setItems] = useState<Backup[] | null>(null);
@@ -944,6 +944,42 @@ function BackupPanel() {
       else setItems(d.backups ?? []);
     } catch {
       setErr("تعذّر إنشاء النسخة");
+    }
+    setBusy(false);
+  };
+
+  const restore = async (name: string) => {
+    if (
+      !confirm(
+        `استعادة «${name}»؟
+
+ستحل محل بيانات المتجر الحالية. تُحفظ لقطة من الحالة الراهنة قبلها، فالتراجع ممكن.`
+      )
+    )
+      return;
+    setBusy(true);
+    setErr("");
+    try {
+      const d = await fetch("/api/admin/backup/restore", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      }).then((r) => r.json());
+      if (d.error) setErr(d.error);
+      else {
+        alert(
+          `تمت الاستعادة ✅
+
+السلامة: ${d.integrity}
+القطع: ${d.products}
+الطلبات: ${d.orders}
+
+لقطة التراجع: ${d.rollback}`
+        );
+        load();
+      }
+    } catch {
+      setErr("تعذّرت الاستعادة");
     }
     setBusy(false);
   };
@@ -988,12 +1024,31 @@ function BackupPanel() {
                   {when(b.at)} — {kb(b.size)}
                 </span>
               </span>
-              <a
-                href={`/api/admin/backup/${b.name}`}
-                className="shrink-0 rounded-full bg-primary-soft px-4 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-white"
-              >
-                نزّل
-              </a>
+              <span className="flex shrink-0 items-center gap-2">
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[0.65rem] font-bold ${
+                    b.healthy === false
+                      ? "bg-danger-soft text-danger"
+                      : "bg-success-soft text-success"
+                  }`}
+                >
+                  {b.healthy === false ? "تالفة" : "سليمة"}
+                </span>
+                <a
+                  href={`/api/admin/backup/${b.name}`}
+                  className="rounded-full bg-primary-soft px-4 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-white"
+                >
+                  نزّل
+                </a>
+                <button
+                  type="button"
+                  disabled={b.healthy === false || busy}
+                  onClick={() => restore(b.name)}
+                  className="cursor-pointer rounded-full border border-line px-4 py-1.5 text-xs font-bold text-foreground transition-colors hover:border-danger hover:text-danger disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  استعِد
+                </button>
+              </span>
             </li>
           ))}
         </ul>

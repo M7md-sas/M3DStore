@@ -9,14 +9,38 @@ export const dynamic = "force-dynamic";
 
 const backupDir = path.join(dataDir, "backups");
 
+/**
+ * نفحص سلامة كل نسخة عند العرض. تعلّمناها بالطريقة الصعبة: نسخة
+ * db.backup تنسخ الصفحات كما هي، فإن كانت القاعدة معطوبة نُسخ العطب
+ * معها — ونسخة تالفة تبدو سليمة أسوأ من غياب النسخ.
+ */
+function integrityOf(file: string): string {
+  try {
+    const db = new Database(file, { readonly: true });
+    try {
+      const rows = db.pragma("integrity_check") as { integrity_check: string }[];
+      return rows[0]?.integrity_check ?? "unknown";
+    } finally {
+      db.close();
+    }
+  } catch {
+    return "unreadable";
+  }
+}
+
 function list() {
   if (!fs.existsSync(backupDir)) return [];
   return fs
     .readdirSync(backupDir)
     .filter((n) => n.startsWith("store-") && n.endsWith(".db"))
     .map((name) => {
-      const s = fs.statSync(path.join(backupDir, name));
-      return { name, size: s.size, at: new Date(s.mtimeMs).toISOString() };
+      const st = fs.statSync(path.join(backupDir, name));
+      return {
+        name,
+        size: st.size,
+        at: new Date(st.mtimeMs).toISOString(),
+        healthy: integrityOf(path.join(backupDir, name)) === "ok",
+      };
     })
     .sort((a, b) => b.at.localeCompare(a.at));
 }

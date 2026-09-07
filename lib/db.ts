@@ -251,6 +251,19 @@ export function getDb(): Database.Database {
   return global.__m3dstore_db;
 }
 
+/**
+ * يغلق الاتصال ويُسقط المرجع العام، فيعيد getDb فتح الملف من جديد.
+ * تحتاجه الاستعادة: لا يصح استبدال ملف القاعدة وهو مفتوح.
+ */
+export function closeDb(): void {
+  try {
+    global.__m3dstore_db?.close();
+  } catch {
+    /* مغلق أصلًا */
+  }
+  global.__m3dstore_db = undefined;
+}
+
 export function generateCode(prefix: "ORD" | "CST"): string {
   const n = Math.floor(100000 + Math.random() * 900000);
   return `${prefix}-${n}`;
