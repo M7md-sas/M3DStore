@@ -29,7 +29,7 @@ export default function ProductVideo({
   if (failed) return null;
 
   return (
-    <div className="relative aspect-square overflow-hidden rounded-3xl border border-line bg-primary-soft/30">
+    <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-line bg-primary-soft/30">
       <video
         src={src}
         poster={poster}
