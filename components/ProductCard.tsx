@@ -15,6 +15,8 @@ export type ProductRow = {
   images?: string;
   color_mode?: string;
   lead_days?: number;
+  video?: string;
+  dimensions?: string;
 };
 
 /** رمز القطعة — يُستخدم في اللوحة والطلبات، لا في وجه الزبون */

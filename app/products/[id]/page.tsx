@@ -11,7 +11,8 @@ import { parseColors, parseColorMode } from "@/lib/colors";
 import { productImages } from "@/lib/images";
 import ProductGallery from "@/components/ProductGallery";
 import ProductReviews from "@/components/ProductReviews";
-import { ArrowLeftIcon, ShieldIcon, TruckIcon, WhatsAppIcon, PrinterIcon } from "@/components/Icons";
+import ProductVideo from "@/components/ProductVideo";
+import { ArrowLeftIcon, ShieldIcon, TruckIcon, WhatsAppIcon, PrinterIcon, CubeIcon } from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,12 @@ export default async function ProductPage({
       </nav>
 
       <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-        <ProductGallery images={productImages(product)} alt={product.name} />
+        <div className="space-y-4">
+          <ProductGallery images={productImages(product)} alt={product.name} />
+          {product.video && (
+            <ProductVideo src={product.video} poster={product.image} alt={product.name} />
+          )}
+        </div>
 
         <div>
           <span className="inline-block rounded-full bg-surface-2 px-3.5 py-1.5 text-xs font-bold text-muted">
@@ -80,6 +86,12 @@ export default async function ProductPage({
               <PrinterIcon width={20} height={20} className="shrink-0 text-primary" />
               <span>{leadTimeText(product.lead_days ?? 3)} — تُطبع بعد طلبك بخامة PLA</span>
             </div>
+            {product.dimensions && (
+              <div className="flex items-center gap-3">
+                <CubeIcon width={20} height={20} className="shrink-0 text-primary" />
+                <span>{product.dimensions}</span>
+              </div>
+            )}
             <div className="flex items-center gap-3">
               <TruckIcon width={20} height={20} className="shrink-0 text-primary" />
               <span>شحن لجميع مدن المملكة — مجاني للطلبات فوق 200 ر.س</span>

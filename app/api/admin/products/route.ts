@@ -4,6 +4,13 @@ import { isAdmin } from "@/lib/admin-auth";
 import { isValidImagePath, fallbackImage, serializeImages } from "@/lib/images";
 import { serializeColors, parseColorMode } from "@/lib/colors";
 
+/** مسار مقطع داخل /videos فقط — لا روابط خارجية ولا خروج من المجلد */
+function videoPath(value: unknown): string {
+  const v = String(value ?? "").trim();
+  if (!v) return "";
+  return /^\/videos\/[A-Za-z0-9._-]+\.(mp4|webm)$/.test(v) ? v : "";
+}
+
 export async function POST(request: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
 
@@ -18,7 +25,7 @@ export async function POST(request: Request) {
   const db = getDb();
   const info = db
     .prepare(
-      "INSERT INTO products (name, description, price, category, image, stock, colors, images, color_mode, lead_days) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO products (name, description, price, category, image, stock, colors, images, color_mode, lead_days, video, dimensions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     )
     .run(
       name,
@@ -30,7 +37,9 @@ export async function POST(request: Request) {
       serializeColors(body.colors),
       serializeImages(body.images, image),
       parseColorMode(body.color_mode),
-      Math.max(0, Math.min(60, Math.floor(Number(body.lead_days) || 3)))
+      Math.max(0, Math.min(60, Math.floor(Number(body.lead_days) || 3))),
+      videoPath(body.video),
+      String(body.dimensions ?? "").trim().slice(0, 80)
     );
   return NextResponse.json({ id: info.lastInsertRowid });
 }
@@ -70,24 +79,28 @@ export async function PATCH(request: Request) {
 
     if (isValidImagePath(body.image)) {
       db.prepare(
-        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?, images = ?, color_mode = ?, lead_days = ?, image = ? WHERE id = ?"
+        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?, images = ?, color_mode = ?, lead_days = ?, video = ?, dimensions = ?, image = ? WHERE id = ?"
       ).run(
         ...fields,
         serializeColors(body.colors),
         serializeImages(body.images, body.image),
         parseColorMode(body.color_mode),
         Math.max(0, Math.min(60, Math.floor(Number(body.lead_days) || 3))),
+        videoPath(body.video),
+        String(body.dimensions ?? "").trim().slice(0, 80),
         body.image,
         id
       );
     } else {
       db.prepare(
-        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?, color_mode = ?, lead_days = ? WHERE id = ?"
+        "UPDATE products SET name = ?, description = ?, price = ?, category = ?, stock = ?, colors = ?, color_mode = ?, lead_days = ?, video = ?, dimensions = ? WHERE id = ?"
       ).run(
         ...fields,
         serializeColors(body.colors),
         parseColorMode(body.color_mode),
         Math.max(0, Math.min(60, Math.floor(Number(body.lead_days) || 3))),
+        videoPath(body.video),
+        String(body.dimensions ?? "").trim().slice(0, 80),
         id
       );
     }

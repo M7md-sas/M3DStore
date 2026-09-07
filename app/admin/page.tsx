@@ -16,7 +16,7 @@ import { parseColors, parseColorMode } from "@/lib/colors";
 type Product = {
   id: number; name: string; description: string; price: number;
   category: string; image: string; stock: number; active: number; colors: string;
-  images: string; color_mode: string; lead_days: number;
+  images: string; color_mode: string; lead_days: number; video: string; dimensions: string;
 };
 type Order = {
   id: number; code: string; customer_name: string; phone: string; city: string;
@@ -589,7 +589,7 @@ function ProductsTab({
   reload: () => void;
 }) {
   const empty = { name: "", description: "", price: "", category: "ديكورات وهدايا", image: images[0], stock: "10", leadDays: "3", colors: [] as string[],
-    gallery: [images[0]] as string[], colorMode: "single" as "single" | "multi" };
+    gallery: [images[0]] as string[], colorMode: "single" as "single" | "multi", video: "", dimensions: "" };
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [err, setErr] = useState("");
@@ -637,6 +637,8 @@ function ProductsTab({
       lead_days: Number(form.leadDays),
       colors: form.colors,
       color_mode: form.colorMode,
+      video: form.video,
+      dimensions: form.dimensions,
     };
     const res = await fetch("/api/admin/products", {
       method: editingId ? "PATCH" : "POST",
@@ -687,6 +689,30 @@ function ProductsTab({
               value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
             <p className="mt-1 text-xs text-muted">تنقص تلقائيًا مع كل طلب</p>
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="p-dim" className="mb-1 block text-sm font-bold">
+            المقاس <span className="font-normal text-muted">(يظهر للزبون)</span>
+          </label>
+          <input id="p-dim" className={inputCls} value={form.dimensions}
+            onChange={(e) => setForm({ ...form, dimensions: e.target.value })}
+            placeholder="مثال: الطول ١٤ سم — العرض ٤ سم" />
+          <p className="mt-1 text-xs text-muted">
+            الزبون لا يعرف إن كانت القطعة ٥ سم أو ٢٠، والحائر يغادر بلا سؤال.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="p-video" className="mb-1 block text-sm font-bold">
+            مقطع القطعة <span className="font-normal text-muted">(اختياري)</span>
+          </label>
+          <input id="p-video" dir="ltr" className={`${inputCls} text-right`} value={form.video}
+            onChange={(e) => setForm({ ...form, video: e.target.value })}
+            placeholder="/videos/fish.mp4" />
+          <p className="mt-1 text-xs text-muted">
+            مسار داخل مجلد videos. القطع المتحركة تبيعها الحركة لا الصورة.
+          </p>
         </div>
 
         <div>
@@ -789,6 +815,8 @@ function ProductsTab({
                     leadDays: String(p.lead_days ?? 3),
                     colors: parseColors(p.colors).map((c) => c.name),
                     gallery: [p.image, ...safeList(p.images)],
+                    video: p.video ?? "",
+                    dimensions: p.dimensions ?? "",
                     colorMode: parseColorMode(p.color_mode),
                   });
                   window.scrollTo({ top: 0, behavior: "smooth" });

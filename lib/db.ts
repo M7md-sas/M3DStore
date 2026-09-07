@@ -189,6 +189,13 @@ function migrate(db: Database.Database) {
   addColumn("orders", "coupon_code", "TEXT NOT NULL DEFAULT ''");
   addColumn("orders", "discount", "REAL NOT NULL DEFAULT 0");
 
+  // مقطع قصير للقطعة. اللعب بمفاصل متحركة لا تبيعه صورة ساكنة —
+  // الحركة هي المنتج، فالمقطع أقرب إلى الصورة الرئيسية منه إلى الزينة.
+  addColumn("products", "video", "TEXT NOT NULL DEFAULT ''");
+
+  // المقاس كنص حر: «الطول ١٤ سم» — يكتبه صاحب المتجر بلغته
+  addColumn("products", "dimensions", "TEXT NOT NULL DEFAULT ''");
+
   // صاحب الطلب إن كان مسجّلًا بقوقل. يبقى NULL للشراء كضيف —
   // الشراء بلا حساب هو الأصل، والحساب إضافة اختيارية فوقه.
   addColumn("orders", "user_id", "INTEGER");
