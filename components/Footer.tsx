@@ -6,6 +6,7 @@ import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
 import { commercialRegister } from "@/lib/cr";
 import VerifyBadge from "./VerifyBadge";
 import { CubeIcon, InstagramIcon, WhatsAppIcon } from "./Icons";
+import { SHIPPING_FLAT, FREE_SHIPPING_OVER } from "@/lib/shipping";
 
 /** تذييل بلغة الملصق: كتل محدودة بخطوط سوداء، وبيانات لا فقرات */
 export default function Footer({ logo }: { logo: string | null }) {
@@ -105,7 +106,7 @@ export default function Footer({ logo }: { logo: string | null }) {
           <div>
             <h3 className="text-xs font-bold text-muted">الشحن</h3>
             <p className="mt-2 font-display text-sm font-bold">
-              25 ر.س لكل المملكة — مجاني فوق 200 ر.س
+              {SHIPPING_FLAT} ر.س لكل المملكة — مجاني فوق {FREE_SHIPPING_OVER} ر.س
             </p>
 
             <h3 className="mt-5 text-xs font-bold text-muted">الدفع</h3>

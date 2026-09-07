@@ -13,6 +13,7 @@ import ProductGallery from "@/components/ProductGallery";
 import ProductReviews from "@/components/ProductReviews";
 import ProductVideo from "@/components/ProductVideo";
 import { ArrowLeftIcon, ShieldIcon, TruckIcon, WhatsAppIcon, PrinterIcon, CubeIcon } from "@/components/Icons";
+import { FREE_SHIPPING_OVER } from "@/lib/shipping";
 
 export const dynamic = "force-dynamic";
 
@@ -94,7 +95,7 @@ export default async function ProductPage({
             )}
             <div className="flex items-center gap-3">
               <TruckIcon width={20} height={20} className="shrink-0 text-primary" />
-              <span>شحن لجميع مدن المملكة — مجاني للطلبات فوق 200 ر.س</span>
+              <span>شحن لجميع مدن المملكة — مجاني للطلبات فوق {FREE_SHIPPING_OVER} ر.س</span>
             </div>
             <div className="flex items-center gap-3">
               <ShieldIcon width={20} height={20} className="shrink-0 text-success" />

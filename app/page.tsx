@@ -7,6 +7,7 @@ import { instagramLink, INSTAGRAM_HANDLE, whatsappLink } from "@/lib/format";
 import { InstagramIcon, WhatsAppIcon, PrinterIcon, TruckIcon } from "@/components/Icons";
 import { parseColors } from "@/lib/colors";
 import { COLOR_PALETTE } from "@/lib/colors";
+import { SHIPPING_FLAT, FREE_SHIPPING_OVER } from "@/lib/shipping";
 
 export const dynamic = "force-dynamic";
 
@@ -139,7 +140,7 @@ export default function HomePage() {
               tint: "#e9f8ef",
               ink: "#157f43",
               t: "توصل لكل مدينة",
-              d: "الشحن 25 ر.س، ومجاني فوق 200 ر.س. يوصلك رمز تتبّع تشوف فيه حالة طلبك أول بأول.",
+              d: `الشحن ${SHIPPING_FLAT} ر.س، ومجاني فوق ${FREE_SHIPPING_OVER} ر.س. يوصلك رمز تتبّع تشوف فيه حالة طلبك أول بأول.`,
             },
             {
               icon: <WhatsAppIcon width={22} height={22} />,

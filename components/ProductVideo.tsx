@@ -9,8 +9,12 @@ import { useState } from "react";
  * يُشغَّل المقطع تلقائيًا وصامتًا ومكرّرًا، كما في إنستقرام: يرى الزبون
  * السمكة تتلوّى قبل أن يقرأ كلمة واحدة.
  *
- * preload="none" حتى لا نحمّل ميجابايتين على جوال أحدهم قبل أن يطلبها،
- * والملصق هو صورة المنتج نفسها فلا يظهر مربع أسود قبل التشغيل.
+ * الحاوية مربّعة والمقطع object-contain داخلها: لا نعرف نسبة كل مقطع
+ * مسبقًا، وبلا حجز مساحة ينهار عنصر الفيديو إلى 300×150 الافتراضية
+ * ثم تقفز الصفحة عند التحميل.
+ *
+ * و preload يبقى "metadata" لا "none": مع "none" لا يبدأ التشغيل
+ * التلقائي أصلًا ولا يُعرف مقاس المقطع — جرّبناها فانكسر الاثنان.
  */
 export default function ProductVideo({
   src,
@@ -25,17 +29,17 @@ export default function ProductVideo({
   if (failed) return null;
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-line bg-primary-soft/30">
+    <div className="relative aspect-square overflow-hidden rounded-3xl border border-line bg-primary-soft/30">
       <video
         src={src}
         poster={poster}
         aria-label={`مقطع لـ${alt}`}
-        className="block h-auto w-full"
+        className="absolute inset-0 h-full w-full object-contain"
         autoPlay
         muted
         loop
         playsInline
-        preload="none"
+        preload="metadata"
         controls
         onError={() => setFailed(true)}
       />

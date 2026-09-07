@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SHIPPING_FLAT, FREE_SHIPPING_OVER } from "@/lib/shipping";
 
 export const metadata: Metadata = {
   title: "الشروط والأحكام",
@@ -57,7 +58,7 @@ export default function TermsPage() {
           <ul className="mt-3 space-y-2">
             {[
               "نشحن لجميع مدن ومحافظات المملكة العربية السعودية.",
-              "رسوم الشحن 25 ر.س — مجاني للطلبات التي تتجاوز 200 ر.س.",
+              `رسوم الشحن ${SHIPPING_FLAT} ر.س — مجاني للطلبات التي تتجاوز ${FREE_SHIPPING_OVER} ر.س.`,
               "مدة التوصيل 3–7 أيام عمل بعد التصنيع (لا تشمل أيام الطباعة).",
               "مدة الطباعة تتراوح بين 1–4 أيام حسب حجم وتعقيد الطلب.",
               "المواعيد تقديرية ولا تُعتبر إلزامية في حالات الظروف الاستثنائية.",
