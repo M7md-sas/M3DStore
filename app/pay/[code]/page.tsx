@@ -2,11 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { sar } from "@/lib/format";
-import PaymentPanel from "@/components/PaymentPanel";
-import { ShieldIcon } from "@/components/Icons";
 import SaveOrderPanel from "@/components/SaveOrderPanel";
 import WhatsAppOrderPanel from "@/components/WhatsAppOrderPanel";
-import { PAYMENT_LIVE, bankTransferReady } from "@/lib/site";
+import { bankTransferReady } from "@/lib/site";
 import BankTransferPanel from "@/components/BankTransferPanel";
 import CardPayPanel from "@/components/CardPayPanel";
 import { paytabsReady } from "@/lib/paytabs";
@@ -38,7 +36,6 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
   let title = "";
   let payable = false;
   let alreadyPaid = false;
-  let method = "";
   let lines: { name: string; qty: number; price: number; colors?: string[] }[] = [];
 
   if (code.startsWith("ORD-")) {
@@ -48,7 +45,6 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
     title = `طلب رقم ${order.code}`;
     payable = order.status === "pending_payment";
     alreadyPaid = !payable;
-    method = order.payment_method;
     try {
       lines = JSON.parse(order.items_json);
     } catch {
@@ -67,31 +63,20 @@ export default async function PayPage({ params }: { params: Promise<{ code: stri
 
   return (
     <div className="mx-auto max-w-lg px-4 py-12">
-      {PAYMENT_LIVE && (
-        <div className="mb-6 flex items-center justify-center gap-2 text-success">
-          <ShieldIcon width={22} height={22} />
-          <span className="font-bold">صفحة دفع آمنة</span>
-        </div>
-      )}
-
       <div className="rounded-3xl border border-line bg-surface p-6 md:p-8">
         <h1 className="text-xl font-extrabold">{title}</h1>
-        <p className="mt-1 text-sm text-muted">{PAYMENT_LIVE ? "المبلغ المستحق" : "إجمالي الطلب"}</p>
+        <p className="mt-1 text-sm text-muted">المبلغ المستحق</p>
         <p className="mt-1 text-4xl font-extrabold text-primary tabular">{sar(amount!)}</p>
 
         <div className="mt-6">
           {payable ? (
-            PAYMENT_LIVE ? (
-              <PaymentPanel code={code} amount={amount!} initialMethod={method || undefined} />
-            ) : (
-              <div className="space-y-4">
-                {paytabsReady() && code.startsWith("ORD-") && (
-                  <CardPayPanel code={code} amount={amount!} />
-                )}
-                {bankTransferReady() && <BankTransferPanel code={code} amount={amount!} />}
-                <WhatsAppOrderPanel code={code} amount={amount!} items={lines} />
-              </div>
-            )
+            <div className="space-y-4">
+              {paytabsReady() && code.startsWith("ORD-") && (
+                <CardPayPanel code={code} amount={amount!} />
+              )}
+              {bankTransferReady() && <BankTransferPanel code={code} amount={amount!} />}
+              <WhatsAppOrderPanel code={code} amount={amount!} items={lines} />
+            </div>
           ) : alreadyPaid ? (
             <div className="rounded-xl bg-success-soft p-5 text-center font-bold text-success">
               تم استلام الدفع لهذا الطلب — تقدر تتابع حالته من صفحة التتبع

@@ -5,10 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart, itemKey } from "@/components/cart";
 import { rememberOrder } from "@/lib/my-orders";
-import { sar, PAYMENT_METHODS } from "@/lib/format";
+import { sar } from "@/lib/format";
 import { SHIPPING_FLAT, FREE_SHIPPING_OVER } from "@/lib/shipping";
-import { PAYMENT_LIVE } from "@/lib/site";
-import { ShieldIcon } from "@/components/Icons";
 
 const CITIES = [
   "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر", "الأحساء",
@@ -173,48 +171,13 @@ export default function CheckoutPage() {
             <p className="mt-1 text-left text-xs text-muted tabular">{form.notes.length} / 1000</p>
           </section>
 
-          {PAYMENT_LIVE ? (
           <section className="rounded-2xl border border-line bg-surface p-6">
-            <h2 className="text-lg font-extrabold">وسيلة الدفع</h2>
-            <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
-              <ShieldIcon width={16} height={16} className="text-success" />
-              جميع المدفوعات مشفّرة وتتم عبر بوابة دفع معتمدة في السعودية
+            <h2 className="text-lg font-extrabold">كيف نكمل الطلب</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              بعد ما ترسل بياناتك يُحفظ طلبك برقم، ويوصلك زر يفتح واتساب برسالة جاهزة
+              فيها تفاصيل طلبك. نؤكد لك التوفّر ونتفق على الدفع والتوصيل مباشرة.
             </p>
-            <div className="mt-4 grid gap-2.5">
-              {PAYMENT_METHODS.map((m) => (
-                <label
-                  key={m.id}
-                  className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 px-4 py-3.5 font-bold transition-colors duration-200 ${
-                    form.payment === m.id
-                      ? "border-primary bg-primary-soft text-primary"
-                      : "border-line bg-surface hover:border-primary/40"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value={m.id}
-                    checked={form.payment === m.id}
-                    onChange={() => setForm({ ...form, payment: m.id })}
-                    className="h-4 w-4 accent-[#7a6935]"
-                  />
-                  {m.label}
-                </label>
-              ))}
-            </div>
           </section>
-          ) : (
-            <section className="rounded-2xl border border-line bg-surface p-6">
-              <h2 className="text-lg font-extrabold">كيف نكمل الطلب</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                بعد ما ترسل بياناتك يُحفظ طلبك برقم، ويوصلك زر يفتح واتساب برسالة جاهزة
-                فيها تفاصيل طلبك. نؤكد لك التوفّر ونتفق على الدفع والتوصيل مباشرة.
-              </p>
-              <p className="mt-2 text-xs text-muted">
-                الدفع الإلكتروني (مدى وApple Pay وSTC Pay) قيد التفعيل.
-              </p>
-            </section>
-          )}
         </div>
 
         <aside className="h-fit rounded-2xl border border-line bg-surface p-6">

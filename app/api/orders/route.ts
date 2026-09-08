@@ -7,6 +7,7 @@ import { sendOrderConfirmation, sendNewOrderAlert, sendLowStockAlert, emailReady
 import { lowStockAfter } from "@/lib/orders";
 import { checkCoupon, markCouponUsed } from "@/lib/coupons";
 import { allow, clientIp } from "@/lib/rate-limit";
+import { sendNewOrderWhatsApp, whatsappReady } from "@/lib/whatsapp";
 
 type ItemInput = { id: number; qty: number; colors?: string[] };
 
@@ -156,6 +157,16 @@ export async function POST(request: Request) {
       if (message.includes("«")) return NextResponse.json({ error: message }, { status: 409 });
       throw err;
     }
+
+    // تنبيه واتساب لصاحب المتجر — البريد لا يوقظ أحدًا في الفجر.
+    // بلا بيانات الزبون: الوسيط خارجي، والتفاصيل تُفتح من اللوحة.
+    if (whatsappReady())
+      void sendNewOrderWhatsApp({
+        code,
+        total,
+        itemCount: lineItems.reduce((n, i) => n + i.qty, 0),
+        city: city.trim(),
+      });
 
     // الإشعارات لا تُنتظر ولا تُفشل الطلب: الزبون دفع، والطلب نجح.
     if (emailReady()) {
