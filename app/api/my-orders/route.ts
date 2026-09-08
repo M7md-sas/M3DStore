@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { currentUser, googleAuthReady } from "@/lib/auth";
+import { allow, clientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,11 @@ export async function GET() {
  * ولا نلمس طلبًا ارتبط بحساب آخر، فلا يُنتزع طلب من صاحبه.
  */
 export async function POST(request: Request) {
+  // يغيّر ملكية طلبات: بلا حدّ يقدر صاحب حساب أن يجرّب رموزًا حتى يضمّ
+  // طلب غيره إلى حسابه
+  if (!allow(`claim:${clientIp(request.headers)}`, 10, 60 * 1000))
+    return NextResponse.json({ ok: false, linked: 0 }, { status: 429 });
+
   const user = await currentUser();
   if (!user) return NextResponse.json({ ok: false, linked: 0 });
 
