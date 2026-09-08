@@ -306,4 +306,23 @@ export function generateCode(prefix: "ORD" | "CST"): string {
   throw new Error("تعذّر توليد رمز فريد");
 }
 
+/**
+ * فحص سلامة ملف قاعدة بيانات. تستخدمه قائمة النسخ الاحتياطية ومسار
+ * الاستعادة معًا — كان منسوخًا في الاثنين، وأي تشديد على أحدهما كان
+ * سيفوت الآخر بصمت.
+ */
+export function integrityOf(file: string): string {
+  try {
+    const db = new Database(file, { readonly: true });
+    try {
+      const rows = db.pragma("integrity_check") as { integrity_check: string }[];
+      return rows[0]?.integrity_check ?? "unknown";
+    } finally {
+      db.close();
+    }
+  } catch {
+    return "unreadable";
+  }
+}
+
 export { uploadsDir, dataDir };

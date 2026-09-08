@@ -1,23 +1,12 @@
 import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
-import Database from "better-sqlite3";
 import { isAdmin } from "@/lib/admin-auth";
-import { dataDir, closeDb, getDb } from "@/lib/db";
+import { dataDir, closeDb, getDb, integrityOf } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 const backupDir = path.join(dataDir, "backups");
-
-function integrityOf(file: string): string {
-  const db = new Database(file, { readonly: true });
-  try {
-    const rows = db.pragma("integrity_check") as { integrity_check: string }[];
-    return rows[0]?.integrity_check ?? "unknown";
-  } finally {
-    db.close();
-  }
-}
 
 /**
  * استعادة قاعدة البيانات من نسخة احتياطية.
