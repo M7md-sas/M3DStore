@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { mayReview, approvedReviews, ratingFor } from "@/lib/reviews";
+import { allow, clientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,9 @@ export async function GET(request: Request) {
  * الاثنان معًا: التحقق من الشراء يمنع الوهمي، والمراجعة تمنع المسيء.
  */
 export async function POST(request: Request) {
+  if (!allow(`review:${clientIp(request.headers)}`, 5, 60 * 1000))
+    return NextResponse.json({ error: "محاولات كثيرة — انتظر دقيقة" }, { status: 429 });
+
   const body = await request.json().catch(() => null);
   const productId = Number(body?.product_id);
   const rating = Math.round(Number(body?.rating));

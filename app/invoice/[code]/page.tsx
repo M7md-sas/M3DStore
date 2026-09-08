@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { allow, clientIp } from "@/lib/rate-limit";
 import type { Metadata } from "next";
 import { getDb } from "@/lib/db";
 import { sar, paymentLabel, ORDER_STATUS } from "@/lib/format";
@@ -40,6 +42,17 @@ export default async function InvoicePage({
   params: Promise<{ code: string }>;
 }) {
   const { code } = await params;
+
+  // الفاتورة تعرض اسم الزبون وجواله وعنوانه، ومفتاحها رمز الطلب وحده.
+  // الحدّ هنا يمنع تعداد الرموز لحصاد بيانات الزبائن.
+  if (!allow(`invoice:${clientIp(await headers())}`, 20, 60 * 1000)) {
+    return (
+      <p className="mx-auto max-w-md px-4 py-24 text-center font-bold text-muted">
+        محاولات كثيرة — انتظر دقيقة ثم أعد المحاولة.
+      </p>
+    );
+  }
+
   const order = getDb()
     .prepare("SELECT * FROM orders WHERE code = ?")
     .get(decodeURIComponent(code)) as Row | undefined;

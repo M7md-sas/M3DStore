@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { allow, clientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  if (!allow(`track:${clientIp(request.headers)}`, 30, 60 * 1000))
+    return NextResponse.json({ error: "محاولات كثيرة — انتظر دقيقة" }, { status: 429 });
+
   try {
     const { code } = (await request.json()) as { code: string };
     const trimmed = (code ?? "").trim().toUpperCase();

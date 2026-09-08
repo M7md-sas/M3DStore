@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 
 // نثبّت مجلد البيانات على جذر المشروع نفسه مهما كان مكان تشغيل السيرفر
 function findProjectRoot(): string {
@@ -271,9 +272,38 @@ export function closeDb(): void {
   global.__m3dstore_db = undefined;
 }
 
+/**
+ * أبجدية الرمز: أرقام وحروف كبيرة بلا I و L و O و U — تُقرأ من ورقة أو
+ * رسالة واتساب بلا لبس بين الحرف والرقم. طولها 32 بالضبط، فأخذ الباقي
+ * من بايت عشوائي (256 = 8×32) لا يميل لأي حرف.
+ */
+const CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+function randomCode(prefix: string, length = 8): string {
+  const bytes = crypto.randomBytes(length);
+  let out = "";
+  for (let i = 0; i < length; i++) out += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length];
+  return `${prefix}-${out}`;
+}
+
+/**
+ * رمز الطلب هو مفتاح الوصول الوحيد لبيانات الزبون: به تُفتح الفاتورة
+ * ويُلغى الطلب ويُكتب التقييم. لذلك يُولَّد عشوائيًا تعميةً (لا
+ * Math.random المتوقَّع) ومن فضاء واسع (32^8 ≈ تريليون) يجعل تعداد
+ * الرموز لحصاد بيانات الزبائن غير عملي.
+ *
+ * ونتحقق من عدم التصادم قبل الإرجاع، فلا يفشل طلب زبون حقيقي على قيد
+ * UNIQUE بسبب رمز مكرر.
+ */
 export function generateCode(prefix: "ORD" | "CST"): string {
-  const n = Math.floor(100000 + Math.random() * 900000);
-  return `${prefix}-${n}`;
+  const table = prefix === "ORD" ? "orders" : "custom_requests";
+  const taken = getDb().prepare(`SELECT 1 FROM ${table} WHERE code = ?`);
+
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const code = randomCode(prefix);
+    if (!taken.get(code)) return code;
+  }
+  throw new Error("تعذّر توليد رمز فريد");
 }
 
 export { uploadsDir, dataDir };

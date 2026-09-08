@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { cancelAndRestore } from "@/lib/orders";
+import { allow, clientIp } from "@/lib/rate-limit";
 
 /**
  * إلغاء الزبون لطلبه بنفسه.
@@ -10,6 +11,9 @@ import { cancelAndRestore } from "@/lib/orders";
  * لا الزبون، فيبقى على واتساب.
  */
 export async function POST(request: Request) {
+  if (!allow(`cancel:${clientIp(request.headers)}`, 10, 60 * 1000))
+    return NextResponse.json({ error: "محاولات كثيرة — انتظر دقيقة" }, { status: 429 });
+
   const body = await request.json().catch(() => null);
   const code = String(body?.code ?? "").trim();
   if (!code.startsWith("ORD-"))
