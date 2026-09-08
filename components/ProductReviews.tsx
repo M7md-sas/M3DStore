@@ -149,11 +149,6 @@ export default function ProductReviews({ productId }: { productId: number }) {
           onSubmit={submit}
           className="panel-soft mt-5 space-y-4 rounded-2xl border border-line bg-surface p-5"
         >
-          <p className="text-sm leading-relaxed text-muted">
-            التقييم لمن اشترى القطعة فعلًا — اكتب رمز طلبك حتى نتأكد. تلقاه في
-            صفحة التتبع أو في بريد تأكيد الطلب.
-          </p>
-
           <div>
             <label htmlFor="rv-code" className="mb-1.5 block text-sm font-bold">رمز الطلب</label>
             <input

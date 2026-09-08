@@ -1018,12 +1018,7 @@ function BackupPanel() {
   return (
     <section className="panel-soft rounded-2xl border border-line bg-surface p-5">
       <h3 className="text-base font-bold">النسخ الاحتياطي</h3>
-      <p className="mt-1 text-sm leading-relaxed text-muted">
-        طلباتك ومنتجاتك محفوظة في ملف واحد على الخادم. تُؤخذ نسخة تلقائيًا كل
-        يوم، لكن <strong className="text-foreground">النسخة على الخادم لا تنجو
-        من عطل الخادم نفسه</strong> — نزّل نسخة على جهازك بين حين وآخر، فهذي
-        الحماية الحقيقية.
-      </p>
+      <p className="mt-1 text-sm text-muted">نسخة تلقائية يوميًا — نزّل واحدة بين حين وآخر لجهازك.</p>
 
       <button
         type="button"

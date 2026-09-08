@@ -178,10 +178,6 @@ function TrackContent() {
       {account?.enabled && !account.user && (
         <section className="panel-soft mt-6 rounded-2xl border border-line bg-surface p-5">
           <h2 className="text-base font-bold">طلباتك على كل أجهزتك</h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted">
-            الطلبات محفوظة في هذا المتصفح فقط. سجّل دخولك بقوقل وتتبعك طلباتك لو
-            بدّلت جوالك أو مسحت المتصفح. الشراء ما يحتاج حساب — هذا اختياري.
-          </p>
           <a
             href="/api/auth/google?next=/track"
             className="mt-4 inline-flex items-center gap-2.5 rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-surface-2"
@@ -242,9 +238,6 @@ function TrackContent() {
               ))}
             </ul>
           )}
-          <p className="border-t border-rule-soft px-5 py-2.5 text-xs text-muted">
-            محفوظة في حسابك — تظهر على أي جهاز تدخل فيه بنفس حساب قوقل.
-          </p>
         </section>
       )}
 
@@ -281,9 +274,6 @@ function TrackContent() {
               </li>
             ))}
           </ul>
-          <p className="border-t border-rule-soft px-4 py-2 text-xs text-muted">
-            محفوظة في هذا المتصفح فقط. لو بدّلت جوالك، كلّمنا واتساب ونستخرج رقم طلبك.
-          </p>
         </section>
       )}
 
