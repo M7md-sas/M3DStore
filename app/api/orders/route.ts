@@ -6,10 +6,18 @@ import { currentUser } from "@/lib/auth";
 import { sendOrderConfirmation, sendNewOrderAlert, sendLowStockAlert, emailReady, ownerEmail } from "@/lib/email";
 import { lowStockAfter } from "@/lib/orders";
 import { checkCoupon, markCouponUsed } from "@/lib/coupons";
+import { allow, clientIp } from "@/lib/rate-limit";
 
 type ItemInput = { id: number; qty: number; colors?: string[] };
 
 export async function POST(request: Request) {
+  // الطلب يخصم مخزونًا ويرسل بريدًا — إغراقه يفرّغ القطع ويغرق صندوقك
+  if (!allow(`order:${clientIp(request.headers)}`, 5, 10 * 60 * 1000))
+    return NextResponse.json(
+      { error: "طلبات كثيرة — انتظر قليلًا" },
+      { status: 429 }
+    );
+
   try {
     const body = await request.json();
     const { customer_name, phone, city, address, payment_method, items, notes } = body as {

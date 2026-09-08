@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { paytabsReady, createPaymentPage, saveTranRef } from "@/lib/paytabs";
 import { originOf } from "@/lib/auth";
+import { allow, clientIp } from "@/lib/rate-limit";
 
 type OrderRow = {
   code: string;
@@ -16,6 +17,9 @@ type OrderRow = {
 export async function POST(request: Request) {
   if (!paytabsReady())
     return NextResponse.json({ error: "الدفع بالبطاقة غير مفعّل" }, { status: 503 });
+
+  if (!allow(`paytabs:${clientIp(request.headers)}`, 10, 60 * 1000))
+    return NextResponse.json({ error: "محاولات كثيرة — انتظر دقيقة" }, { status: 429 });
 
   const body = await request.json().catch(() => null);
   const code = String(body?.code ?? "");

@@ -4,6 +4,7 @@ import fs from "fs/promises";
 import crypto from "crypto";
 import { getDb, generateCode, uploadsDir } from "@/lib/db";
 import { CUSTOM_ORDERS_ENABLED } from "@/lib/site";
+import { allow, clientIp } from "@/lib/rate-limit";
 
 const ALLOWED_EXT = [".stl", ".obj", ".3mf", ".step", ".stp", ".png", ".jpg", ".jpeg", ".webp", ".pdf", ".zip"];
 const MAX_SIZE = 40 * 1024 * 1024; // 40MB
@@ -11,6 +12,9 @@ const MAX_SIZE = 40 * 1024 * 1024; // 40MB
 export async function POST(request: Request) {
   if (!CUSTOM_ORDERS_ENABLED)
     return NextResponse.json({ error: "طلبات التصميم المخصص غير متاحة حاليًا" }, { status: 404 });
+
+  if (!allow(`custom:${clientIp(request.headers)}`, 3, 10 * 60 * 1000))
+    return NextResponse.json({ error: "طلبات كثيرة — انتظر قليلًا" }, { status: 429 });
 
   try {
     const form = await request.formData();
